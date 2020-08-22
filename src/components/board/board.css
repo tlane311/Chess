@@ -1,0 +1,31 @@
+body {
+background: slateblue;
+height:70vh;
+width:70vh;
+}
+
+.square {
+height: 8vh;
+width: 8vh;
+padding:0;
+float: left;
+border: 0px;
+}
+.square:hover{
+    color: rgb(71, 177, 39);
+}
+
+#dark{
+    background: rgb(77, 72, 72);
+}
+#light{
+    background: rgb(214, 201, 201);
+}
+#selected{
+    background: rgb(71, 177, 39);
+}
+.board-row:after{
+    clear:both;
+    content:"";
+    display:table;
+}
