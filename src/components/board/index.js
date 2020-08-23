@@ -20,7 +20,7 @@ class Board extends React.Component {
         return (
             <Square
                 shade={this.props.shade(number)}
-                value={this.props.position[number].type} //what is happening with null squares here?
+                value={this.props.position[number].type} //what is happening with null squares here? Answer: I used type as key in my null squares
                 onClick={ () => this.props.onClick(number) }
             />
         );
@@ -59,7 +59,7 @@ export class Game extends React.Component {
     }
 
     possibleMoves(position,selected){ //true returns array of locations else returns false
-        if (selected){
+        if (selected !==null){
             if (position[selected].type){
                 return movesLogic[position[selected].type](selected)
             } else {
@@ -70,12 +70,18 @@ export class Game extends React.Component {
         }
     }
 
-    shade(number){
-        let numberIsPossibleMove = Boolean(
-            this.possibleMoves(this.state.history[0].position,this.state.selected)
+    numberisPossibleMove(number) {  //supposed to detect if a given number is a possible move from selected
+        const history = JSON.parse(JSON.stringify(this.state.history));
+        return Boolean(
+            this.possibleMoves(history[history.length -1].position,this.state.selected)
             .filter(element => element === number)
             .length);
-        if (number===this.state.selected  && this.state.history[0].position[number].type){
+    }
+
+    shade(number){
+        const history = JSON.parse(JSON.stringify(this.state.history));
+        let numberIsPossibleMove = this.numberisPossibleMove(number)
+        if (number===this.state.selected  && history[history.length -1].position[number].type){
             return "selected"
         } else if (numberIsPossibleMove) {
             return "possibleMove"
@@ -85,14 +91,32 @@ export class Game extends React.Component {
     }
 
     selectClick(number) {
+        // if selected !== null & number is a possible move
+            // execute move
+            // i.e. firstPosition.position needs to update
+        const oldhistory = JSON.parse(JSON.stringify(this.state.history));
+        const history = JSON.parse(JSON.stringify(this.state.history));
+        const current = history[history.length - 1];
+
         if (this.state.selected !== number){
-            this.setState({
-                history:[firstPosition],
-                selected: number
-            });
+            if (this.numberisPossibleMove(number)) {
+                let nextPosition = current.position.slice();
+                nextPosition[number]=nextPosition[this.state.selected];
+                nextPosition[this.state.selected]={type: null};
+                let next=current;
+                next.position=nextPosition;
+                this.setState({
+                    history: oldhistory.concat(next),
+                    selected: null
+                })
+            } else {
+                this.setState({
+                    selected: number
+                });
+
+            }
         } else {
             this.setState({
-                history:[firstPosition],
                 selected: null
             });
         }
@@ -102,7 +126,7 @@ export class Game extends React.Component {
 
     render() {
         const history = this.state.history;
-        const current = history[0].position;
+        const current = history[history.length - 1].position;
         return (
             <div>
                 <Board 

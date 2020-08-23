@@ -2,17 +2,21 @@
 
 export const movesLogic = {
     knight: function (selection) {
-            return [].concat(
-                selection - 17,
-                selection - 15,
-                selection + 15,
-                selection + 17)
-            .filter(
-                number => number >=0 && number < 64
-            );
+            return [-17,-15,-10,-6,6,10,15,17]
+            .map(number => selection+number)
+            .filter(number => number <= 63 && number >= 0)
+            .filter(number => number%8 - selection%8 < 3 && number%8 - selection%8 > -3)
+            .map(number => number);
         },
-    pawn: function (selection) {
-            return [].concat(selection+7, selection+8, selection+9);
+    whitePawn: function (selection) {
+            return [-7,-8,-9]
+            .map(number => number + selection)
+            .filter(number => number%8 - selection%8 < 2 && number%8 - selection%8 > -2)
+        },
+    blackPawn: function (selection) {
+            return [7,8,9]
+            .map(number => number + selection)
+            .filter(number => number%8 - selection%8 < 2 && number%8 - selection%8 > -2)
         },
     rook: function (selection) {
             let reducedSelection=selection%8;
@@ -73,12 +77,7 @@ export const movesLogic = {
 }
 
 console.log(
-    movesLogic.pawn(37),
-    movesLogic.knight(37),
-    movesLogic.rook(37),
-    movesLogic.bishop(37),
-    movesLogic.queen(37),
-    movesLogic.king(50)
+    movesLogic.knight(1),
 );
 
 
