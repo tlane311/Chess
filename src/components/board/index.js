@@ -6,7 +6,6 @@ import './board.css';
 import { firstPosition } from './pieces/pieces.js';
 import { movesLogic } from './pieces/pieceslogic.js'
 
-
 function Square(props) {
     return (
         <div className="square" id={props.shade} onClick={props.onClick}>
@@ -48,6 +47,8 @@ class Board extends React.Component {
     }
 }
 
+
+
 export class Game extends React.Component {
 
     constructor(props) {
@@ -55,73 +56,104 @@ export class Game extends React.Component {
         this.state = {
             history: [firstPosition],
             selected: null,
+            whiteIsNext: true 
         };
     }
 
-    possibleMoves(position,selected){ //true returns array of locations else returns false
-        if (selected !==null){
-            if (position[selected].type){
+    possibleMoves(position,selected){ //returns array of moves
+        if (selected !==null){ //conditional to avoid position[null].type which throws error
+            
+            if (position[selected].type){ //nonempty square selected
                 return movesLogic[position[selected].type](selected)
-            } else {
+            } else { //empty square selected
                 return []
             }
-        } else {
+
+        } else { //selected===null
             return []
         }
     }
 
-    numberisPossibleMove(number) {  //supposed to detect if a given number is a possible move from selected
-        const history = JSON.parse(JSON.stringify(this.state.history));
+    squareisPossibleMove(square) {  //returns boolean describing if a given square is a possible move from selected
+        const history = this.state.history;
+        const selected = this.state.selected;
+        
         return Boolean(
-            this.possibleMoves(history[history.length -1].position,this.state.selected)
-            .filter(element => element === number)
+            this.possibleMoves( history[history.length -1].position, selected )
+            .filter(element => element === square)
             .length);
     }
 
-    shade(number){
+    shade(square){//adds a css id to each square that decides shade
         const history = JSON.parse(JSON.stringify(this.state.history));
-        let numberIsPossibleMove = this.numberisPossibleMove(number)
-        if (number===this.state.selected  && history[history.length -1].position[number].type){
+        let squareIsPossibleMove = this.squareisPossibleMove(square)
+        
+        if (square===this.state.selected  && history[history.length -1].position[square].type){
+            //if square is selected and square is not empty
             return "selected"
-        } else if (numberIsPossibleMove) {
+        } else if (squareIsPossibleMove) {
             return "possibleMove"
         } else {
-            return (number%2===0 && number%16 <=7) || (number%2!==0 && number%16 >7) ? "light" : "dark";
+            //standard shading for chess board describing using modulo conditionals
+            return (square%2===0 && square%16 <=7) || (square%2!==0 && square%16 >7) ? "light" : "dark";
         }
     }
 
-    selectClick(number) {
-        // if selected !== null & number is a possible move
-            // execute move
-            // i.e. firstPosition.position needs to update
+    handleClick(square) {
         const oldhistory = JSON.parse(JSON.stringify(this.state.history));
-        const history = JSON.parse(JSON.stringify(this.state.history));
+        const history = JSON.parse(JSON.stringify(this.state.history)); //need new history because js keeps live references to subobjects
         const current = history[history.length - 1];
-
-        if (this.state.selected !== number){
-            if (this.numberisPossibleMove(number)) {
-                let nextPosition = current.position.slice();
-                nextPosition[number]=nextPosition[this.state.selected];
-                nextPosition[this.state.selected]={type: null};
-                let next=current;
-                next.position=nextPosition;
-                this.setState({
-                    history: oldhistory.concat(next),
-                    selected: null
-                })
-            } else {
-                this.setState({
-                    selected: number
-                });
-
-            }
-        } else {
+        const selected = this.state.selected;
+        const whiteIsNext = this.state.whiteIsNext;
+            // A & B
+        if (selected===null && current.position[square].type !== null && (current.position[square].color==="white")===whiteIsNext) {
             this.setState({
-                selected: null
+                selected: square
             });
         }
+            //~(A && B) === ~A || ~B === ~A && B || ~A & ~B || A && ~B <-- I am skipping this last case with my current logic
+            //~A
+        if (selected !== null) {
+            if (selected !== square){ //clicking on non-selected square
+                if (this.squareisPossibleMove(square)) {//move will be executed
+                    
+                    let nextPosition = current.position.slice();
+                    let next=current;
+                    
+                    nextPosition[square]=nextPosition[this.state.selected];
+                    nextPosition[this.state.selected]={type: null};
+                    next.position=nextPosition;
+                    
+                    this.setState({
+                        history: oldhistory.concat(next),
+                        selected: null,
+                        whiteIsNext: !whiteIsNext
+                    });
+                    
+                } else { //selecting different squares behavior
+                    //~A && B
+                    if (current.position[square].type !== null && (current.position[square].color==="white")===whiteIsNext) {
+                        this.setState({
+                            selected: square
+                        });
+                    // ~A && ~B
+                    } else {
+                        this.setState({
+                            selected: null
+                        });
+                    }    
+                }   
+            }
+        }
     }
 
+    //if select===null && current.position[square].type !==null && current.position[square].color==="white"
+        //select=square
+    //if select!==null
+        //clicking on non-selected square
+            //possibleMove
+            //notPossibleMove
+                //anotherPiece ? select = square: select = null
     
 
     render() {
@@ -130,9 +162,9 @@ export class Game extends React.Component {
         return (
             <div>
                 <Board 
-                position={current}
-                onClick = {number => this.selectClick(number)}
-                shade = { number => this.shade(number) }
+                position= { current }
+                onClick = {square => this.handleClick(square)}
+                shade = { square => this.shade(square) }
                 />
             </div>
         )
