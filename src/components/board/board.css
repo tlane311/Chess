@@ -24,6 +24,9 @@ border: 0px;
 #selected{
     background: rgb(71, 177, 39);
 }
+#possibleMove{
+    background:#b2b;
+}
 .board-row:after{
     clear:both;
     content:"";

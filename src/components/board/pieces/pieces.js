@@ -1,4 +1,4 @@
-const blackPieces = [ 
+const blackPieces = [
     {type: "rook",
     color: "black",
     id: "a8",
@@ -163,7 +163,6 @@ const whitePieces = [
     },
 ]
 
-
 export const firstPosition = {
     position: blackPieces.slice().concat(Array(32).fill({type:null})).concat(whitePieces.slice()),
     check: {
@@ -201,4 +200,3 @@ export const firstPosition = {
     enPassant:{
     }
 }
-

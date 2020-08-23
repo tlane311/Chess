@@ -1,13 +1,16 @@
+/*jslint es6 */
+
 import React from 'react';
 //import ReactDOM from 'react-dom';
 import './board.css';
 import { firstPosition } from './pieces/pieces.js';
+import { movesLogic } from './pieces/pieceslogic.js'
 
 
 function Square(props) {
     return (
         <div className="square" id={props.shade} onClick={props.onClick}>
-        {props.value}
+            {props.value}
         </div>
     );
 }
@@ -17,7 +20,7 @@ class Board extends React.Component {
         return (
             <Square
                 shade={this.props.shade(number)}
-                value={this.props.position[number].type,number} //what is happening with null squares here?
+                value={this.props.position[number].type} //what is happening with null squares here?
                 onClick={ () => this.props.onClick(number) }
             />
         );
@@ -51,24 +54,34 @@ export class Game extends React.Component {
         super(props);
         this.state = {
             history: [firstPosition],
-            selected: null
+            selected: null,
         };
     }
 
-    shade(number){
-        if (number !== this.state.selected){
-            let shade = (number%2===0 && number%16 <=7) || (number%2!==0 && number%16 >7) ? "light" : "dark";
-            return shade
+    possibleMoves(position,selected){ //true returns array of locations else returns false
+        if (selected){
+            if (position[selected].type){
+                return movesLogic[position[selected].type](selected)
+            } else {
+                return []
+            }
         } else {
-            return "selected"
+            return []
         }
-        
     }
 
-    possibleMoves(selection, position){
-        //retrieve selected
-        //if piece is not null
-            //calculate possible moves based on type
+    shade(number){
+        let numberIsPossibleMove = Boolean(
+            this.possibleMoves(this.state.history[0].position,this.state.selected)
+            .filter(element => element === number)
+            .length);
+        if (number===this.state.selected  && this.state.history[0].position[number].type){
+            return "selected"
+        } else if (numberIsPossibleMove) {
+            return "possibleMove"
+        } else {
+            return (number%2===0 && number%16 <=7) || (number%2!==0 && number%16 >7) ? "light" : "dark";
+        }
     }
 
     selectClick(number) {
