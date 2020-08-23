@@ -6,6 +6,8 @@ import './board.css';
 import { firstPosition } from './pieces/pieces.js';
 import { movesLogic } from './pieces/pieceslogic.js'
 
+
+
 function Square(props) {
     return (
         <div className="square" id={props.shade} onClick={props.onClick}>
@@ -13,7 +15,16 @@ function Square(props) {
         </div>
     );
 }
- 
+
+function TurnIndicator(props) {
+    return (
+        <div className="turnindicator" id={props.turn}>
+            {props.value}
+        </div>
+    )
+}
+
+
 class Board extends React.Component {
     renderSquare(number){
         return (
@@ -38,10 +49,20 @@ class Board extends React.Component {
     render() {
         return (
             <div>
+                <TurnIndicator
+                    turn={this.props.whiteIsNext ? "" : "yourTurn"}
+                    value="Black's Turn"
+                />
+
                 {[0,8,16,24,32,40,48,56]
                 .map( item => (
                     this.renderRow(item)
                 ))}
+                <TurnIndicator
+                    turn={this.props.whiteIsNext ? "yourTurn" : ""}
+                    value="White's Turn"
+                />
+
             </div>
         )
     }
@@ -159,12 +180,14 @@ export class Game extends React.Component {
     render() {
         const history = this.state.history;
         const current = history[history.length - 1].position;
+        const whiteIsNext=this.state.whiteIsNext;
         return (
             <div>
                 <Board 
                 position= { current }
                 onClick = {square => this.handleClick(square)}
                 shade = { square => this.shade(square) }
+                whiteIsNext = { whiteIsNext }
                 />
             </div>
         )

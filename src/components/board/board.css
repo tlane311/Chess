@@ -27,6 +27,12 @@ border: 0px;
 #possibleMove{
     background:#b2b;
 }
+#yourTurn{
+    font-size: 20px;
+    font-weight: 900;
+    color: yellow;
+}
+
 .board-row:after{
     clear:both;
     content:"";
