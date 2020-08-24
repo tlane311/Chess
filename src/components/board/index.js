@@ -189,6 +189,7 @@ export class Game extends React.Component {
                 shade = { square => this.shade(square) }
                 whiteIsNext = { whiteIsNext }
                 />
+                {JSON.stringify(current)}
             </div>
         )
     }

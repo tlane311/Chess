@@ -81,6 +81,8 @@ export const movesLogic = {
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 
+
+//review naiveMovesLogic for DRY/WET
 const naiveMovesLogic = {
     knight: function (selection) {
             return [-17,-15,-10,-6,6,10,15,17]
@@ -92,12 +94,12 @@ const naiveMovesLogic = {
     whitePawn: function (selection) {
             return [-7,-8,-9]
             .map(number => number + selection)
-            .filter(number => number%8 - selection%8 < 2 && number%8 - selection%8 > -2)
+            .filter(number => number%8 - selection%8 < 2 && number%8 - selection%8 > -2) //wall detection
         },
     blackPawn: function (selection) {
             return [7,8,9]
             .map(number => number + selection)
-            .filter(number => number%8 - selection%8 < 2 && number%8 - selection%8 > -2)
+            .filter(number => number%8 - selection%8 < 2 && number%8 - selection%8 > -2) //wall detection
         },
     rook: function (selection) {
             let reducedSelection=selection%8;
@@ -112,6 +114,13 @@ const naiveMovesLogic = {
 
             return horizontalMoves.concat(verticalMoves);
         },
+
+    // bishop logic is based upon modular arithmetic
+    // squares %9 lay on decreasing diagonal (left-to-right)
+    // squares %7 lay on increasing diagonal (left-to-right)
+    // the tricky part is dealing with hitting the side of the board
+    // the idea is to translate central diagonals and truncate dynamically
+    // do not mess with unless you want to spend 8 hours making sure you didn't break it
     bishop: function (selection) {
             let leftReducedSelection = selection%9;
             let rightReducedSelection = selection%7;
@@ -137,7 +146,7 @@ const naiveMovesLogic = {
                 .map(number => (rightReducedSelection - 7) + number)
                 .filter(number => number!==selection);
             } else {//below the diagonal logic
-                if (selection===63) { rightReducedSelection=7 } //63 needs special attention
+                if (selection===63) { rightReducedSelection = 7 } //63 needs special attention
                 var rightMoves = [7,14,21,28,35,42,49,56]
                 .filter( (number,index) => index >= rightReducedSelection)
                 .map( number => number + rightReducedSelection)
@@ -170,18 +179,18 @@ function indicesClosestTo(array,index,value) { //this splits based on index
     return [firstIndex, leftChunk.length + secondIndex];
 }
 
-//booleanArrayBuilder depends upon my chess logic
+//booleanArrayBuilder depends upon position object
 function booleanArrayBuilder(naiveMoves, selection, position) {
     const oppositeColor = position[selection].color ==="white" ? "black" : "white";
     const splittingIndex = naiveMoves.filter( number => number - selection < 0).length;
 
     const arrayOfSquares = naiveMoves.map(number => position[number]);
-    const arrayOfColors = arrayOfSquares.map( square => {square.type === null ? null : square.color} );
+    const arrayOfColors = arrayOfSquares.map( square => square.type === null ? null : square.color); 
 
     const firstOppositeColorSquares = indicesClosestTo(arrayOfColors,splittingIndex,oppositeColor);
     //Note, indicesClosestTo returns an array with two elements. the first element can be -1 if no matches are found and the second can be Infinity if no matches are found
 
-    let booleanArray = arrayOfColors.map(color => color!== null ? false : true);
+    let booleanArray = arrayOfColors.map(color => color!==null ? false : true);
 
     if (firstOppositeColorSquares[0] > -1) {
         booleanArray[firstOppositeColorSquares[0]]=true;
@@ -190,17 +199,16 @@ function booleanArrayBuilder(naiveMoves, selection, position) {
         booleanArray[firstOppositeColorSquares[0]]=true;
     }
 
-    return booleanArray
+    return booleanArray;
 }
-
+//for next function
 //center = splittingIndex = naiveMoves.filter( number => number - selection < 0).length;
 
 //independent function maybe reusable
-function collisionDetector (arrayToBeFiltered, booleanArray, center){
-    const firstCollisionSquares = indicesClosestTo(booleanArray, center, false);
-    const firstIndex = firstCollisionSquares[0]
-    const secondIndex = firstCollisionSquares[1]
-
+function collisionDetector (arrayToBeFiltered, booleanArray, splittingIndex){
+    const firstCollisionSquares = indicesClosestTo(booleanArray, splittingIndex, false);
+    const firstIndex = firstCollisionSquares[0];
+    const secondIndex = firstCollisionSquares[1];
 
     return arrayToBeFiltered.slice(firstIndex+1,secondIndex);
 }
@@ -212,8 +220,8 @@ function collisionDetector (arrayToBeFiltered, booleanArray, center){
 //collisionLogic
 const collisionLogic = {
     whitePawn: function (selection, position) {
-            return naiveMovesLogic.whitePawn(selection)
-            .filter(number => !(position[number].type !==null && position[number].color==position[selection].color));
+        return naiveMovesLogic.whitePawn(selection)
+        .filter(number => !(position[number].type !==null && position[number].color==position[selection].color));
         },
     blackPawn: function (selection, position) {
         return naiveMovesLogic.blackPawn(selection)
@@ -223,71 +231,57 @@ const collisionLogic = {
         return naiveMovesLogic.knight(selection)
         .filter(number => !(position[number].type !==null && position[number].color==position[selection].color));
     },
-    bishop: null,
+    bishop: function (selection, position) {
+        const leftMoves = naiveMovesLogic.bishop(selection) //recover leftMoves
+        .filter(number => number%9===selection%9);
+
+        const leftBooleanArray = booleanArrayBuilder(leftMoves,selection,position);
+        const leftSplittingIndex = leftMoves.filter( number => number - selection < 0).length;
+        const filteredLeftMoves = collisionDetector(leftMoves, leftBooleanArray, leftSplittingIndex );
+
+
+        const rightMoves = naiveMovesLogic.bishop(selection)
+        .filter(number => number%8===selection%8);
+
+        const rightBooleanArray = booleanArrayBuilder(rightMoves,selection,position);
+        const rightSplittingIndex = rightMoves.filter( number => number - selection < 0).length;
+        const filteredRightMoves = collisionDetector(rightMoves, rightBooleanArray, rightSplittingIndex);
+
+        return filteredLeftMoves.concat(filteredRightMoves);
+    },
+
     rook: function (selection, position) {
-        let horizontalMoves=naiveMovesLogic.rook(selection) //recover horizontalMoves
+        const horizontalMoves = naiveMovesLogic.rook(selection) //recover horizontalMoves
         .filter(number => (number - number%8)===(selection - selection%8));
 
-        horizontalMoves
-        .map( square => {
-            if (square.type){
-                return square.color
-            } else {
-                return null;
-            }
-        })
-
-        .lastIndexOf(position[selection].color)
-        .indexOf(position[selection].color)
+        const horizontalBooleanArray = booleanArrayBuilder(horizontalMoves,selection,position);
+        const horizontalSplittingIndex = horizontalMoves.filter( number => number - selection < 0).length;
+        const filteredHorizontalMoves = collisionDetector(horizontalMoves, horizontalBooleanArray, horizontalSplittingIndex );
 
 
-        return
+        const verticalMoves = naiveMovesLogic.rook(selection)
+        .filter(number => number%8===selection%8);
+
+        const verticalBooleanArray = booleanArrayBuilder(verticalMoves,selection,position);
+        const verticalSplittingIndex = verticalMoves.filter( number => number - selection < 0).length;
+        const filteredVerticalMoves = collisionDetector(verticalMoves, verticalBooleanArray, verticalSplittingIndex);
+
+        return filteredHorizontalMoves.concat(filteredVerticalMoves);
     },
-    queen: null,
-    king: null
+    queen: function (selection,position) {
+        return this.rook(selection,position).concat(this.bishop(selection,position));
+    },
+    king: function (selection,position) {
+        return naiveMovesLogic.whitePawn(selection)
+        .filter(number => !(position[number].type !==null && position[number].color==position[selection].color));
+    }
 }
 
-let position = [
-    {//0
-        type: "pawn",
-        color: "black"
-    },
-    1,
-    {
-        type: "pawn",
-        color: "black"
-    },3,4,5,6,7,
-    {//8
-        type: "pawn",
-        color: "white"
-    },
-    {//9
-        type: "pawn",
-        color: "white"
-    },
-    {//10
-        type: "queen",
-        color: "white"
-    }
-    ,11,12,13,14,15,
-    {//16
-        type: "pawn",
-        color: "black"
-    },
-    {//17
-        type: "pawn",
-        color: "black"
-    },
-    18,19,20,21,22,23,24,25,26,27,
-    28,29,30,31,32,33,34,35,36,37,
-    38,39,40,41,42,43,44,45,46,47,
-    48,49,50,51,52,53,54,55,56,57,
-    58,59,60,61,62,63
-]
+let position = [{"type":"rook","color":"black","id":"a8","status":true},{"type":"knight","color":"black","id":"b8","status":true},{"type":"bishop","color":"black","id":"c8","status":true},{"type":"king","color":"black","id":"d8","status":true},{"type":"queen","color":"black","id":"e8","status":true},{"type":"bishop","color":"black","id":"f8","status":true},{"type":"knight","color":"black","id":"g8","status":true},{"type":null},{"type":"blackPawn","color":"black","id":"a7","status":true},{"type":"blackPawn","color":"black","id":"b7","status":true},{"type":"blackPawn","color":"black","id":"c7","status":true},{"type":"blackPawn","color":"black","id":"d7","status":true},{"type":null},{"type":"blackPawn","color":"black","id":"f7","status":true},{"type":"blackPawn","color":"black","id":"g7","status":true},{"type":null},{"type":null},{"type":null},{"type":null},{"type":null},{"type":"blackPawn","color":"black","id":"e7","status":true},{"type":null},{"type":null},{"type":"rook","color":"black","id":"h8","status":true},{"type":null},{"type":null},{"type":null},{"type":null},{"type":null},{"type":null},{"type":null},{"type":"blackPawn","color":"black","id":"h7","status":true},{"type":null},{"type":null},{"type":null},{"type":null},{"type":null},{"type":null},{"type":null},{"type":null},{"type":"whitePawn","color":"white","id":"a2","status":true},{"type":"whitePawn","color":"white","id":"b2","status":true},{"type":null},{"type":"whitePawn","color":"white","id":"d2","status":true},{"type":null},{"type":"knight","color":"white","id":"g1","status":true},{"type":null},{"type":null},{"type":null},{"type":null},{"type":"whitePawn","color":"white","id":"c2","status":true},{"type":null},{"type":"whitePawn","color":"white","id":"e2","status":true},{"type":"whitePawn","color":"white","id":"f2","status":true},{"type":"whitePawn","color":"white","id":"g2","status":true},{"type":"whitePawn","color":"white","id":"h2","status":true},{"type":"rook","color":"white","id":"a1","status":true},{"type":"knight","color":"white","id":"b1","status":true},{"type":"bishop","color":"white","id":"c1","status":true},{"type":"king","color":"white","id":"d1","status":true},{"type":"queen","color":"white","id":"e1","status":true},{"type":"bishop","color":"white","id":"f1","status":true},{"type":null},{"type":"rook","color":"white","id":"h1","status":true}]
+
 console.log(
-    collisionLogic.blackPawn(0,position),
-    collisionLogic.knight(0,position),
-    collisionLogic.rook(0,position)
+    collisionLogic.bishop(58,position),
+    collisionLogic.rook(23,position)
 )
 
 //advancedPawnLogic
