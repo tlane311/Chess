@@ -85,7 +85,7 @@ export class Game extends React.Component {
         if (selected !==null){ //conditional to avoid position[null].type which throws error
             
             if (position[selected].type){ //nonempty square selected
-                return movesLogic[position[selected].type](selected)
+                return movesLogic[position[selected].type](selected,position)
             } else { //empty square selected
                 return []
             }
