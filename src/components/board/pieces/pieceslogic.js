@@ -1,14 +1,5 @@
 /*jslint es6 */
 
-
-
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////
-
-
-//review naiveMovesLogic for DRY/WET
 const naiveMovesLogic = {
     knight: function (selection) {
             return [-17,-15,-10,-6,6,10,15,17]
@@ -86,9 +77,9 @@ const naiveMovesLogic = {
     king: function (selection) {
         return [-9,-8,-7,-1,1,7,8,9]
         .filter( number => !( selection%8===0 && (number === 7 || number === -9 || number === -1) ) ) //wall&corner detection
-        .filter( number => !( selection%8===7 && (number === -7 || number === 9 || number === 1) ) )
+        .filter( number => !( selection%8===7 && (number === -7 || number === 9 || number === 1) ) ) //wall&corner detection
         .map( number => selection+number )
-        .filter( number => (number >=0 && number < 64) );
+        .filter( number => (number >=0 && number < 64) ); //keeping returned array clean of useless values
         }
 }
 
@@ -107,58 +98,42 @@ function indicesClosestTo(array,index,value) { //this splits based on index
 
 //booleanArrayBuilder depends upon position object
 function booleanArrayBuilder(naiveMoves, selection, position) {
-    const oppositeColor = position[selection].color ==="white" ? "black" : "white"; //black
+    const oppositeColor = position[selection].color ==="white" ? "black" : "white";
     const splittingIndex = naiveMoves.filter( number => number - selection < 0).length;
-    //splittingIndex=1
+
     const arrayOfSquares = naiveMoves.map(number => position[number]);
-    const arrayOfColors = arrayOfSquares.map( square => square.type === null ? null : square.color); 
-    // selection =33
-    // arrayOfColors = [null,black,null,null,null,black,null]
-    // [32,34,35,36,37,38,39]
-    //firstOppositeColorSquares=[-1,1]
-    const firstOppositeColorSquares = indicesClosestTo(arrayOfColors,splittingIndex,oppositeColor);
+    const arrayOfColors = arrayOfSquares.map( square => square.type === null ? null : square.color);
+    const [firstIndex, secondIndex] = indicesClosestTo(arrayOfColors,splittingIndex,oppositeColor);
     //Note, indicesClosestTo returns an array with two elements. the first element can be -1 if no matches are found and the second can be Infinity if no matches are found
-    const [firstIndex, secondIndex] = firstOppositeColorSquares;
 
     let booleanArray = arrayOfColors.map(color => color!==null ? false : true);
-    //booleanArray = [true, false, true, true, true, false, true]
-    
 
     if (firstIndex > -1) {
         booleanArray[firstIndex]=true;
         let leftOfSlice = Array(firstIndex).fill(false);
         booleanArray = leftOfSlice.concat(booleanArray.slice(firstIndex))
     }
-    
+
     if (secondIndex < Infinity) {
         booleanArray[secondIndex]=true;
-        //booleanArray = [true, true, true, true, true, false, true]
-        
         let rightOfSlice = Array(naiveMoves.length - secondIndex - 1).fill(false);
-        //naiveMoves.length - secondIndex - 1 = 7 - 1 - 1 = 5
-        //rightOfSlice=[false,false,false,false,false]
         booleanArray = booleanArray.slice(0,secondIndex+1).concat(rightOfSlice)
-        //booleanArray.slice(0,secondIndex+1) = [true,true]
-        //.concat(rightOfSlice) = [true, true] + [false, false, false, false, false]
     }
 
     return booleanArray;
-    //booleanArray=[true, true, false, false, false, false, false]
 }
-//for next function
-//center = splittingIndex = naiveMoves.filter( number => number - selection < 0).length;
 
 //independent function maybe reusable
 function collisionDetector (arrayToBeFiltered, booleanArray, splittingIndex){
-    const firstCollisionSquares = indicesClosestTo(booleanArray, splittingIndex, false);
-    const firstIndex = firstCollisionSquares[0];
-    const secondIndex = firstCollisionSquares[1];
+    const [firstIndex, secondIndex] = indicesClosestTo(booleanArray, splittingIndex, false);
 
     return arrayToBeFiltered.slice(firstIndex+1,secondIndex);
 }
 
-
-
+//even easier way:
+    //just slice at the first piece you encounter
+    //if opposite color include then slice
+    //otherwise just cut everything
 
 
 //collisionLogic
@@ -176,7 +151,7 @@ const collisionLogic = {
         .filter(number => !(position[number].type !==null && position[number].color==position[selection].color));
     },
     bishop: function (selection, position) {
-        const leftMoves = naiveMovesLogic.bishop(selection) //recover leftMoves
+        const leftMoves = naiveMovesLogic.bishop(selection) //recover decreasing diagonal moves
         .filter(number => number%9===selection%9);
 
         const leftBooleanArray = booleanArrayBuilder(leftMoves,selection,position);
@@ -184,7 +159,7 @@ const collisionLogic = {
         const filteredLeftMoves = collisionDetector(leftMoves, leftBooleanArray, leftSplittingIndex );
 
 
-        const rightMoves = naiveMovesLogic.bishop(selection)
+        const rightMoves = naiveMovesLogic.bishop(selection) //recover increasing diagonal moves
         .filter(number => number%7===selection%7);
 
         const rightBooleanArray = booleanArrayBuilder(rightMoves,selection,position);
@@ -195,7 +170,7 @@ const collisionLogic = {
     },
 
     rook: function (selection, position) {
-        const horizontalMoves = naiveMovesLogic.rook(selection) //recover horizontalMoves
+        const horizontalMoves = naiveMovesLogic.rook(selection) //recover horizontal moves
         .filter(number => (number - number%8)===(selection - selection%8));
 
         const horizontalBooleanArray = booleanArrayBuilder(horizontalMoves,selection,position);
@@ -203,7 +178,7 @@ const collisionLogic = {
         const filteredHorizontalMoves = collisionDetector(horizontalMoves, horizontalBooleanArray, horizontalSplittingIndex );
 
 
-        const verticalMoves = naiveMovesLogic.rook(selection)
+        const verticalMoves = naiveMovesLogic.rook(selection) //recover vertical moves
         .filter(number => number%8===selection%8);
 
         const verticalBooleanArray = booleanArrayBuilder(verticalMoves,selection,position);
@@ -221,6 +196,7 @@ const collisionLogic = {
     }
 }
 
+//random position for testing purposes
 let position = [
     {"type":"rook","color":"black","id":"a8","status":true}, //0
     {"type":"knight","color":"black","id":"b8","status":true}, //1
@@ -248,33 +224,6 @@ let position = [
     {"type":"queen","color":"black","id":"e8","status":true}, //38
     {"type":null}, //39 end of row
     {"type":null},{"type":null},{"type":null},{"type":null},{"type":"whitePawn","color":"white","id":"e2","status":true},{"type":"knight","color":"white","id":"g1","status":true},{"type":null},{"type":null},{"type":"whitePawn","color":"white","id":"a2","status":true},{"type":"whitePawn","color":"white","id":"b2","status":true},{"type":"whitePawn","color":"white","id":"c2","status":true},{"type":"whitePawn","color":"white","id":"d2","status":true},{"type":null},{"type":"whitePawn","color":"white","id":"f2","status":true},{"type":"whitePawn","color":"white","id":"g2","status":true},{"type":"whitePawn","color":"white","id":"h2","status":true},{"type":"rook","color":"white","id":"a1","status":true},{"type":"knight","color":"white","id":"b1","status":true},{"type":"bishop","color":"white","id":"c1","status":true},{"type":null},{"type":"king","color":"white","id":"d1","status":true},{"type":"bishop","color":"white","id":"f1","status":true},{"type":null},{"type":"rook","color":"white","id":"h1","status":true}]
-
-//console.log(
-//    collisionLogic.queen(33,position),
-//)
-/*
-const selection = 33;
-const horizontalMoves = naiveMovesLogic.rook(selection) //recover horizontalMoves
-.filter(number => (number - number%8)===(selection - selection%8));
-
-const horizontalBooleanArray = booleanArrayBuilder(horizontalMoves,selection,position);
-const horizontalSplittingIndex = horizontalMoves.filter( number => number - selection < 0).length;
-const filteredHorizontalMoves = collisionDetector(horizontalMoves, horizontalBooleanArray, horizontalSplittingIndex );*/
-//console.log(horizontalMoves)
-//console.log(horizontalSplittingIndex)
-//console.log(horizontalBooleanArray)
-
-
-//advancedPawnLogic
-
-
-
-
-
-
-
-
-
 
 
 //EXPORT
