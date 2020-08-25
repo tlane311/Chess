@@ -148,8 +148,7 @@ export const firstPosition = {
         }
     },
     enPassant:{
-        c7: true,
-        g2: true
+
     },
     takenWhitePieces: [],
     takenBlackPieces: []

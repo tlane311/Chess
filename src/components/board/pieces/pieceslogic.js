@@ -257,7 +257,7 @@ const advancedPawnLogic = {
     }
 }
 
-castleLogic = {
+const castleLogic = {
     rook: null,
     king: null
 }

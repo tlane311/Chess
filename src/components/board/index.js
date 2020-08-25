@@ -120,6 +120,44 @@ export class Game extends React.Component {
         }
     }
 
+    moveHandler(selection, nextSquare, history, whiteIsNext) {
+        'use strict';
+        const oldhistory = JSON.parse(JSON.stringify(history));
+        const freshHistory = JSON.parse(JSON.stringify(history)); //need multiple history because js keeps live references to subobjects
+        const current = freshHistory[history.length - 1];
+    
+        let nextPosition = current.position.slice();
+        let next=current; //redundant code but should make this bit more readable
+        const nextSquareIsOccupied = Boolean(nextPosition[nextSquare].type);
+    
+        if (nextSquareIsOccupied){
+            whiteIsNext ? next.takenBlackPieces.push(current.position[nextSquare]) : next.takenWhitePieces.push(current.position[nextSquare]);
+        }
+    
+        const castling= false;
+        const castlingSide = true ? "king" : "queen";
+    
+        if (!castling) {
+            nextPosition[nextSquare]=nextPosition[selection];
+            nextPosition[selection]={type: null};
+        } else {
+            nextPosition[nextSquare]=nextPosition[selection];
+            nextPosition[selection]={type: null};
+        }
+    
+    
+        next.position=nextPosition;
+        next.enPassant={};
+    
+        //moveHelper at the end to clear up statuses
+        this.setState({
+            history: oldhistory.concat(next),
+            selected: null,
+            whiteIsNext: !whiteIsNext
+        });
+    }
+
+
     
 
     handleClick(square) {
@@ -140,19 +178,7 @@ export class Game extends React.Component {
             if (selected !== square){ //clicking on non-selected square
                 if (this.squareisPossibleMove(square)) {//move will be executed
                     
-                    let nextPosition = current.position.slice();
-                    let next=current;
-                    
-                    nextPosition[square]=nextPosition[this.state.selected];
-                    nextPosition[this.state.selected]={type: null};
-                    
-                    next.position=nextPosition;
-                    
-                    this.setState({
-                        history: oldhistory.concat(next),
-                        selected: null,
-                        whiteIsNext: !whiteIsNext
-                    });
+                    this.moveHandler(selected,square,this.state.history,this.state.whiteIsNext);
                     
                 } else { //selecting different squares behavior
                     //~A && B
@@ -186,13 +212,18 @@ export class Game extends React.Component {
         const whiteIsNext=this.state.whiteIsNext;
         return (
             <div>
+                <div className= "takenPieces"> {JSON.stringify(history[history.length - 1].takenWhitePieces)} </div>
                 <Board 
                 position= { current }
                 onClick = {square => this.handleClick(square)}
                 shade = { square => this.shade(square) }
                 whiteIsNext = { whiteIsNext }
                 />
-                {JSON.stringify(current)}
+                <div className= "takenPieces"> {JSON.stringify(history[history.length - 1].takenBlackPieces)} </div>
+                <div className="position">{JSON.stringify(current)}</div>
+                
+                
+                
             </div>
         )
     }
