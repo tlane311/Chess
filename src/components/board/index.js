@@ -81,11 +81,11 @@ export class Game extends React.Component {
         };
     }
 
-    possibleMoves(position,selected){ //returns array of moves
+    possibleMoves(selected, state){ //returns array of moves
         if (selected !==null){ //conditional to avoid position[null].type which throws error
             
-            if (position[selected].type){ //nonempty square selected
-                return movesLogic[position[selected].type](selected,position)
+            if (state.position[selected].type){ //nonempty square selected
+                return movesLogic[state.position[selected].type](selected,state)
             } else { //empty square selected
                 return []
             }
@@ -100,7 +100,7 @@ export class Game extends React.Component {
         const selected = this.state.selected;
         
         return Boolean(
-            this.possibleMoves( history[history.length -1].position, selected )
+            this.possibleMoves(selected, history[history.length -1] )
             .filter(element => element === square)
             .length);
     }
@@ -119,6 +119,8 @@ export class Game extends React.Component {
             return (square%2===0 && square%16 <=7) || (square%2!==0 && square%16 >7) ? "light" : "dark";
         }
     }
+
+    
 
     handleClick(square) {
         const oldhistory = JSON.parse(JSON.stringify(this.state.history));
@@ -143,6 +145,7 @@ export class Game extends React.Component {
                     
                     nextPosition[square]=nextPosition[this.state.selected];
                     nextPosition[this.state.selected]={type: null};
+                    
                     next.position=nextPosition;
                     
                     this.setState({

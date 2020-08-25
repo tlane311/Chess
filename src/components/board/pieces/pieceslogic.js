@@ -135,66 +135,185 @@ function collisionDetector (arrayToBeFiltered, booleanArray, splittingIndex){
     //if opposite color include then slice
     //otherwise just cut everything
 
+//advancedPawnLogic
+
+
+
 
 //collisionLogic
 const collisionLogic = {
-    whitePawn: function (selection, position) {
+    whitePawn: function (selection, state) {
         return naiveMovesLogic.whitePawn(selection)
-        .filter(number => !(position[number].type !==null && position[number].color==position[selection].color));
+        .filter(square => !(state.position[square].type !==null && state.position[square].color==state.position[selection].color))
+        .filter(square => (selection%8 === square%8 && state.position[square].type ===null) || (selection%8 !== square%8 && state.position[square].type !==null) );
         },
-    blackPawn: function (selection, position) {
+    blackPawn: function (selection, state) {
         return naiveMovesLogic.blackPawn(selection)
-        .filter(number => !(position[number].type !==null && position[number].color==position[selection].color));
+        .filter(square => !(state.position[square].type !==null && state.position[square].color==state.position[selection].color))
+        .filter(square => (selection%8 === square%8 && state.position[square].type ===null) || (selection%8 !== square%8 && state.position[square].type !==null) );
     },
-    knight: function (selection, position){
+    knight: function (selection, state){
         return naiveMovesLogic.knight(selection)
-        .filter(number => !(position[number].type !==null && position[number].color==position[selection].color));
+        .filter(square => !(state.position[square].type !==null && state.position[square].color==state.position[selection].color));
     },
-    bishop: function (selection, position) {
+    bishop: function (selection, state) {
+        const position = state.position;
         const leftMoves = naiveMovesLogic.bishop(selection) //recover decreasing diagonal moves
-        .filter(number => number%9===selection%9);
+        .filter(square => square%9===selection%9);
 
         const leftBooleanArray = booleanArrayBuilder(leftMoves,selection,position);
-        const leftSplittingIndex = leftMoves.filter( number => number - selection < 0).length;
+        const leftSplittingIndex = leftMoves.filter( square => square - selection < 0).length;
         const filteredLeftMoves = collisionDetector(leftMoves, leftBooleanArray, leftSplittingIndex );
 
 
         const rightMoves = naiveMovesLogic.bishop(selection) //recover increasing diagonal moves
-        .filter(number => number%7===selection%7);
+        .filter(square => square%7===selection%7);
 
         const rightBooleanArray = booleanArrayBuilder(rightMoves,selection,position);
-        const rightSplittingIndex = rightMoves.filter( number => number - selection < 0).length;
+        const rightSplittingIndex = rightMoves.filter( square => square - selection < 0).length;
         const filteredRightMoves = collisionDetector(rightMoves, rightBooleanArray, rightSplittingIndex);
 
         return filteredLeftMoves.concat(filteredRightMoves);
     },
 
-    rook: function (selection, position) {
+    rook: function (selection, state) {
+        const position=state.position;
         const horizontalMoves = naiveMovesLogic.rook(selection) //recover horizontal moves
-        .filter(number => (number - number%8)===(selection - selection%8));
+        .filter(square => (square - square%8)===(selection - selection%8));
 
         const horizontalBooleanArray = booleanArrayBuilder(horizontalMoves,selection,position);
-        const horizontalSplittingIndex = horizontalMoves.filter( number => number - selection < 0).length;
+        const horizontalSplittingIndex = horizontalMoves.filter( square => square - selection < 0).length;
         const filteredHorizontalMoves = collisionDetector(horizontalMoves, horizontalBooleanArray, horizontalSplittingIndex );
 
 
         const verticalMoves = naiveMovesLogic.rook(selection) //recover vertical moves
-        .filter(number => number%8===selection%8);
+        .filter(square => square%8===selection%8);
 
         const verticalBooleanArray = booleanArrayBuilder(verticalMoves,selection,position);
-        const verticalSplittingIndex = verticalMoves.filter( number => number - selection < 0).length;
+        const verticalSplittingIndex = verticalMoves.filter( square => square - selection < 0).length;
         const filteredVerticalMoves = collisionDetector(verticalMoves, verticalBooleanArray, verticalSplittingIndex);
 
         return filteredHorizontalMoves.concat(filteredVerticalMoves);
     },
-    queen: function (selection,position) {
-        return this.rook(selection,position).concat(this.bishop(selection,position));
+    queen: function (selection,state) {
+        return this.rook(selection,state).concat(this.bishop(selection,state));
     },
-    king: function (selection,position) {
+    king: function (selection,state) {
         return naiveMovesLogic.king(selection)
-        .filter(number => !(position[number].type !==null && position[number].color==position[selection].color));
+        .filter(square => !(state.position[square].type !==null && state.position[square].color==state.position[selection].color));
     }
 }
+
+const advancedPawnLogic = {
+    whitePawn: function (selection,state) {
+        //en Passant logic
+        const oppositePawn = state.position[selection].type === "whitePawn" ? "blackPawn" : "whitePawn";
+        const leftAdjacentIsPawn = selection%8 > 0 ? state.position[selection-1].type === oppositePawn : false;
+        const leftAdjacentIsPassing = Boolean(state.enPassant[state.position[selection-1].id]); 
+
+        const rightAdjacentIsPawn = selection%8 < 8 ? state.position[selection-1].type === oppositePawn : false;
+        const rightAdjacentIsPassing = Boolean(state.enPassant[state.position[selection+1].id]);
+
+        let enPassantMoves=[];
+        if (leftAdjacentIsPawn && leftAdjacentIsPassing) {
+            enPassantMoves.push(selection - 9);
+        }
+        if (rightAdjacentIsPawn && rightAdjacentIsPassing) {
+            enPassantMoves.push(selection - 7);
+        }
+
+        //first pawn move logic
+        const sleepingBoolean = selection - selection %8 === 48;
+        if (sleepingBoolean) {
+            return collisionLogic.whitePawn(selection,state).concat(selection-16).concat(enPassantMoves)
+        } else {
+            return collisionLogic.whitePawn(selection,state).concat(enPassantMoves)
+        }
+    },
+    blackPawn: function (selection,state) {
+        //en Passant logic
+        const oppositePawn = state.position[selection].type === "whitePawn" ? "blackPawn" : "whitePawn";
+        const leftAdjacentIsPawn = selection%8 > 0 ? state.position[selection-1].type === oppositePawn : false;
+        const leftAdjacentIsPassing = Boolean(state.enPassant[state.position[selection-1].id]); 
+
+        const rightAdjacentIsPawn = selection%8 < 8 ? state.position[selection+1].type === oppositePawn : false;
+        const rightAdjacentIsPassing = Boolean(state.enPassant[state.position[selection+1].id]);
+
+        let enPassantMoves=[];
+        if (leftAdjacentIsPawn && leftAdjacentIsPassing) {
+            enPassantMoves.push(selection + 7);
+        }
+        if (rightAdjacentIsPawn && rightAdjacentIsPassing) {
+            enPassantMoves.push(selection + 9);
+        }
+
+        const sleepingBoolean = selection - selection %8 === 8;
+        if (sleepingBoolean) {
+            return collisionLogic.blackPawn(selection,state).concat(selection+16).concat(enPassantMoves)
+        }
+        else {
+            return collisionLogic.blackPawn(selection,state).concat(enPassantMoves)
+        }
+    }
+}
+
+castleLogic = {
+    rook: null,
+    king: null
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+///////////////////////////
+//EXPORT
+
+export const movesLogic = {
+    whitePawn: function (selection,state) {
+        return advancedPawnLogic.whitePawn(selection,state);
+        },
+    blackPawn: function (selection,position) {
+        return advancedPawnLogic.blackPawn(selection,position);
+        },
+    knight: function (selection,position) {
+        return collisionLogic.knight(selection,position);
+        },
+    bishop: function (selection,position) {
+        return collisionLogic.bishop(selection,position);
+        },
+    rook: function (selection,position) {
+            return collisionLogic.rook(selection,position);
+            },
+    queen: function (selection,position) {
+        return collisionLogic.queen(selection,position);
+        },
+    king: function (selection,position) {
+        return collisionLogic.king(selection,position);
+    }
+}
+
+
+
+
+
+
 
 //random position for testing purposes
 let position = [
@@ -225,29 +344,3 @@ let position = [
     {"type":null}, //39 end of row
     {"type":null},{"type":null},{"type":null},{"type":null},{"type":"whitePawn","color":"white","id":"e2","status":true},{"type":"knight","color":"white","id":"g1","status":true},{"type":null},{"type":null},{"type":"whitePawn","color":"white","id":"a2","status":true},{"type":"whitePawn","color":"white","id":"b2","status":true},{"type":"whitePawn","color":"white","id":"c2","status":true},{"type":"whitePawn","color":"white","id":"d2","status":true},{"type":null},{"type":"whitePawn","color":"white","id":"f2","status":true},{"type":"whitePawn","color":"white","id":"g2","status":true},{"type":"whitePawn","color":"white","id":"h2","status":true},{"type":"rook","color":"white","id":"a1","status":true},{"type":"knight","color":"white","id":"b1","status":true},{"type":"bishop","color":"white","id":"c1","status":true},{"type":null},{"type":"king","color":"white","id":"d1","status":true},{"type":"bishop","color":"white","id":"f1","status":true},{"type":null},{"type":"rook","color":"white","id":"h1","status":true}]
 
-
-//EXPORT
-
-export const movesLogic = {
-    knight: function (selection,position) {
-        return collisionLogic.knight(selection,position);
-        },
-    whitePawn: function (selection,position) {
-        return collisionLogic.whitePawn(selection,position);
-        },
-    blackPawn: function (selection,position) {
-        return collisionLogic.blackPawn(selection,position);
-        },
-    rook: function (selection,position) {
-        return collisionLogic.rook(selection,position);
-        },
-    bishop: function (selection,position) {
-        return collisionLogic.bishop(selection,position);
-        },
-    queen: function (selection,position) {
-        return collisionLogic.queen(selection,position);
-        },
-    king: function (selection,position) {
-        return collisionLogic.king(selection,position);
-    }
-}
