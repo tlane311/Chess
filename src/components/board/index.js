@@ -76,17 +76,22 @@ const moveHelper = { //this is supposed to help tidy up the extra props of state
             state.enPassant[state.position[nextSquare].id]="true";
             //state.position[nextSquare + 8] = {type: null};
         }
-
+        //remove taken pawn
         if (selection - 9 ===  nextSquare || selection - 7 === nextSquare) {
             state.position[nextSquare + 8] = {type: null};
         }
 
     },
     blackPawn: function (selection, nextSquare, state) {
-        //en passant
+        //add en passant status 
         if (selection - nextSquare=== -16){
             state.enPassant[state.position[nextSquare].id]="true";
         }
+        //remove taken pawn
+        if (selection + 9 ===  nextSquare || selection + 7 === nextSquare) {
+            state.position[nextSquare - 8] = {type: null};
+        }
+        
     },
     knight: function (selection, nextSquare, state) {},
     //bishop: function (selection, nextSquare, state) {},
