@@ -133,6 +133,10 @@ const whitePieces = [
 
 export const firstPosition = {
     position: blackPieces.slice().concat(Array(32).fill({type:null})).concat(whitePieces.slice()),
+    kingPosition: {
+        white: 60,
+        black: 4
+    },
     check: {
         white: false,
         black: false

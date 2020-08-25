@@ -4,7 +4,7 @@ import React from 'react';
 //import ReactDOM from 'react-dom';
 import './board.css';
 import { firstPosition } from './pieces/pieces.js';
-import { movesLogic } from './pieces/pieceslogic.js'
+import { movesLogic, checkDetector } from './pieces/pieceslogic.js'
 
 
 
@@ -74,12 +74,13 @@ const moveHelper = { //this is supposed to help tidy up the extra props of state
         //add en passant status 
         if (selection - nextSquare=== 16){
             state.enPassant[state.position[nextSquare].id]="true";
-            //state.position[nextSquare + 8] = {type: null};
         }
         //remove taken pawn
         if (selection - 9 ===  nextSquare || selection - 7 === nextSquare) {
             state.position[nextSquare + 8] = {type: null};
         }
+
+        //promotion helper
 
     },
     blackPawn: function (selection, nextSquare, state) {
@@ -91,19 +92,77 @@ const moveHelper = { //this is supposed to help tidy up the extra props of state
         if (selection + 9 ===  nextSquare || selection + 7 === nextSquare) {
             state.position[nextSquare - 8] = {type: null};
         }
+
+        //promotion helper
         
     },
     knight: function (selection, nextSquare, state) {},
-    //bishop: function (selection, nextSquare, state) {},
+    bishop: function (selection, nextSquare, state) {},
     rook: function (selection, nextSquare, state) {
         //castling
-       
     },
-    //queen: function (selection, nextSquare, state) {},
+    queen: function (selection, nextSquare, state) {},
     king: function (selection, nextSquare, state) {
-        //castling
+        const castling= false;
+        const castlingSide = true ? "king" : "queen";
+        //alter castling status
+            //case1: castle occured
+            //case2: king moved prematurely
+            //case3: rook moved prematurely
+
+        //move rook after castle occurs
     },
 }
+
+
+
+
+
+
+
+function checkHelper(state, whiteIsNext) {
+    const color = whiteIsNext ? "black" : "white"; 
+    if (checkDetector(state,whiteIsNext)) {
+        state.check[color]=true;
+    } else {
+        state.check[color]=false;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function checkmate (state) {
+    return null;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -189,6 +248,7 @@ export class Game extends React.Component {
         //moveHelper at the end to clear up statuses
 
         moveHelper[nextPosition[nextSquare].type](selection,nextSquare,next);
+        checkHelper(next,whiteIsNext);
 
         this.setState({
             history: oldHistory.concat(next),
@@ -253,7 +313,7 @@ export class Game extends React.Component {
         const whiteIsNext=this.state.whiteIsNext;
         return (
             <div>
-                <div> {JSON.stringify(history[history.length - 1].enPassant)}</div>
+                <div> {JSON.stringify(history[history.length - 1].check)}</div>
                 <div className= "takenPieces"> {JSON.stringify(history[history.length - 1].takenWhitePieces)} </div>
                 <Board 
                 position= { current }

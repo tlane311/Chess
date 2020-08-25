@@ -262,6 +262,34 @@ const castleLogic = {
     king: null
 }
 
+const checkLogic = {//filters moves during check
+    rook: function(selection, state) {
+        if (!state.check.white && !state.check.black) {
+            return collisionLogic(selection,state); //need to fix this
+        } else {
+            const color = state.check.white ? "white" : "black";
+
+        }
+    }
+}
+
+
+export function checkDetector (state,whiteIsNext) {
+    const color = whiteIsNext ? "black" : "white";
+    const oppositeColor = color==="black" ? "white" : "black";
+    const kingPosition = state.kingPosition[color];
+    
+    let check = false;
+
+    for (let square=0; square< 64; square++) {
+        if (state.position[square].type && state.position[square].color===oppositeColor){
+            check = check || collisionLogic[state.position[square].type](square,state).includes(kingPosition);
+        }
+    }
+
+
+    return check;
+}
 
 
 
