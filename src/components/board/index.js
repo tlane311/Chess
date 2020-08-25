@@ -69,6 +69,38 @@ class Board extends React.Component {
 }
 
 
+const moveHelper = { //this is supposed to help tidy up the extra props of state
+    whitePawn: function (selection, nextSquare, state) {
+        //add en passant status 
+        if (selection - nextSquare=== 16){
+            state.enPassant[state.position[nextSquare].id]="true";
+            //state.position[nextSquare + 8] = {type: null};
+        }
+
+        if (selection - 9 ===  nextSquare || selection - 7 === nextSquare) {
+            state.position[nextSquare + 8] = {type: null};
+        }
+
+    },
+    blackPawn: function (selection, nextSquare, state) {
+        //en passant
+        if (selection - nextSquare=== -16){
+            state.enPassant[state.position[nextSquare].id]="true";
+        }
+    },
+    knight: function (selection, nextSquare, state) {},
+    //bishop: function (selection, nextSquare, state) {},
+    rook: function (selection, nextSquare, state) {
+        //castling
+       
+    },
+    //queen: function (selection, nextSquare, state) {},
+    king: function (selection, nextSquare, state) {
+        //castling
+    },
+}
+
+
 
 export class Game extends React.Component {
 
@@ -122,7 +154,7 @@ export class Game extends React.Component {
 
     moveHandler(selection, nextSquare, history, whiteIsNext) {
         'use strict';
-        const oldhistory = JSON.parse(JSON.stringify(history));
+        const oldHistory = JSON.parse(JSON.stringify(history));
         const freshHistory = JSON.parse(JSON.stringify(history)); //need multiple history because js keeps live references to subobjects
         const current = freshHistory[history.length - 1];
     
@@ -150,8 +182,11 @@ export class Game extends React.Component {
         next.enPassant={};
     
         //moveHelper at the end to clear up statuses
+
+        moveHelper[nextPosition[nextSquare].type](selection,nextSquare,next);
+
         this.setState({
-            history: oldhistory.concat(next),
+            history: oldHistory.concat(next),
             selected: null,
             whiteIsNext: !whiteIsNext
         });
@@ -178,7 +213,8 @@ export class Game extends React.Component {
             if (selected !== square){ //clicking on non-selected square
                 if (this.squareisPossibleMove(square)) {//move will be executed
                     
-                    this.moveHandler(selected,square,this.state.history,this.state.whiteIsNext);
+                    this.moveHandler(selected,square,this.state.history,this.state.whiteIsNext);        
+
                     
                 } else { //selecting different squares behavior
                     //~A && B
@@ -212,6 +248,7 @@ export class Game extends React.Component {
         const whiteIsNext=this.state.whiteIsNext;
         return (
             <div>
+                <div> {JSON.stringify(history[history.length - 1].enPassant)}</div>
                 <div className= "takenPieces"> {JSON.stringify(history[history.length - 1].takenWhitePieces)} </div>
                 <Board 
                 position= { current }
@@ -221,9 +258,6 @@ export class Game extends React.Component {
                 />
                 <div className= "takenPieces"> {JSON.stringify(history[history.length - 1].takenBlackPieces)} </div>
                 <div className="position">{JSON.stringify(current)}</div>
-                
-                
-                
             </div>
         )
     }

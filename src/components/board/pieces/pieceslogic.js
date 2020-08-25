@@ -211,7 +211,7 @@ const advancedPawnLogic = {
         const leftAdjacentIsPawn = selection%8 > 0 ? state.position[selection-1].type === oppositePawn : false;
         const leftAdjacentIsPassing = Boolean(state.enPassant[state.position[selection-1].id]); 
 
-        const rightAdjacentIsPawn = selection%8 < 8 ? state.position[selection-1].type === oppositePawn : false;
+        const rightAdjacentIsPawn = selection%8 < 8 ? state.position[selection+1].type === oppositePawn : false;
         const rightAdjacentIsPassing = Boolean(state.enPassant[state.position[selection+1].id]);
 
         let enPassantMoves=[];
@@ -224,7 +224,7 @@ const advancedPawnLogic = {
 
         //first pawn move logic
         const sleepingBoolean = selection - selection %8 === 48;
-        if (sleepingBoolean) {
+        if (sleepingBoolean && state.position[selection-8].type===null && state.position[selection-16].type===null ) {
             return collisionLogic.whitePawn(selection,state).concat(selection-16).concat(enPassantMoves)
         } else {
             return collisionLogic.whitePawn(selection,state).concat(enPassantMoves)
