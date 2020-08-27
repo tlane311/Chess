@@ -4,7 +4,11 @@ height:70vh;
 width:70vh;
 }
 
+
 .square {
+display:flex;
+align-items: center;
+justify-content: center;
 height: 8vh;
 width: 8vh;
 padding:0;

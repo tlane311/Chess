@@ -10,8 +10,8 @@ import { movesLogic, checkDetector } from './pieces/pieceslogic.js'
 
 function Square(props) {
     return (
-        <div className="square" id={props.shade} onClick={props.onClick}>
-            {props.value}
+        <div className={"square" + " "} id={props.shade} onClick={props.onClick}>
+            <img src={props.value}/>
         </div>
     );
 }
@@ -30,7 +30,7 @@ class Board extends React.Component {
         return (
             <Square
                 shade={this.props.shade(number)}
-                value={this.props.position[number].type} //what is happening with null squares here? Answer: I used type as key in my null squares
+                value={this.props.position[number].img} //what is happening with null squares here? Answer: I used type as key in my null squares
                 onClick={ () => this.props.onClick(number) }
             />
         );
