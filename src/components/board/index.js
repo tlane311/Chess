@@ -18,7 +18,7 @@ function Square(props) {
 
 function TurnIndicator(props) {
     return (
-        <div className="turnindicator" id={props.turn}>
+        <div className={"turn-indicator " + props.colorOfIndicator} id={props.turn}>
             {props.value}
         </div>
     )
@@ -49,19 +49,10 @@ class Board extends React.Component {
     render() {
         return (
             <div>
-                <TurnIndicator
-                    turn={this.props.whiteIsNext ? "" : "yourTurn"}
-                    value="Black's Turn"
-                />
-
                 {[0,8,16,24,32,40,48,56]
                 .map( item => (
                     this.renderRow(item)
                 ))}
-                <TurnIndicator
-                    turn={this.props.whiteIsNext ? "yourTurn" : ""}
-                    value="White's Turn"
-                />
 
             </div>
         )
@@ -297,32 +288,52 @@ export class Game extends React.Component {
             }
         }
     }
-
-    //if select===null && current.position[square].type !==null && current.position[square].color==="white"
-        //select=square
-    //if select!==null
-        //clicking on non-selected square
-            //possibleMove
-            //notPossibleMove
-                //anotherPiece ? select = square: select = null
     
 
     render() {
         const history = this.state.history;
         const current = history[history.length - 1].position;
         const whiteIsNext=this.state.whiteIsNext;
+        
         return (
-            <div>
-                <div> {JSON.stringify(history[history.length - 1].check)}</div>
-                <div className= "takenPieces"> {JSON.stringify(history[history.length - 1].takenWhitePieces)} </div>
-                <Board 
-                position= { current }
-                onClick = {square => this.handleClick(square)}
-                shade = { square => this.shade(square) }
-                whiteIsNext = { whiteIsNext }
-                />
-                <div className= "takenPieces"> {JSON.stringify(history[history.length - 1].takenBlackPieces)} </div>
-                <div className="position">{JSON.stringify(current)}</div>
+            <div className="game-container">
+                <div className="board-container">
+
+                    <div className="player-info">
+                        <div className= "takenPieces"> takenWhitePieces </div>
+                        <TurnIndicator
+                        turn={!whiteIsNext ? "" : "yourTurn"}
+                        value="Black's Turn"
+                        colorOfIndicator="black-turn-indicator"
+                        /> 
+                    </div>
+                    
+                    <Board 
+                        position= { current }
+                        onClick = {square => this.handleClick(square)}
+                        shade = { square => this.shade(square) }
+                        whiteIsNext = { whiteIsNext }
+                    />
+                    
+                    <div className="player-info">
+                        <div className= "takenPieces"> takenBlackPieces </div>
+                        <TurnIndicator
+                            turn={!whiteIsNext ? "yourTurn" : ""}
+                            value="White's Turn"
+                            colorOfIndicator="white-turn-indicator"
+                        />
+                    </div>
+
+                </div>
+
+                <div className="history-container">
+                                     {/* This should be a component*/}
+                    <h2> History </h2>    
+                    <ol>
+                        <li>e4 e5</li>
+                        <li>e5 e6</li>
+                    </ol>
+                </div>
             </div>
         )
     }
