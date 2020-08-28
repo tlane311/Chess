@@ -1,0 +1,48 @@
+<html>
+    <body>
+        <h1 class="title"> //peaceful <br> chess// </h1>
+        <div id="root">
+            
+            <div className="game-container">
+                
+                <div className="board-container">
+                    <div className="player-info">
+                        <div className= "takenPieces"> takenWhitePieces </div>
+                        <TurnIndicator
+                        turn={!whiteIsNext ? "" : "yourTurn"}
+                        value="Black's Turn"
+                        colorOfIndicator="black-turn-indicator"
+                        /> 
+                    </div>
+                    
+                    <Board 
+                        position= { current }
+                        onClick = {square => this.handleClick(square)}
+                        shade = { square => this.shade(square) }
+                        whiteIsNext = { whiteIsNext }
+                    />
+                    
+                    <div className="player-info">
+                        <div className= "takenPieces"> takenBlackPieces </div>
+                        <TurnIndicator
+                            turn={!whiteIsNext ? "yourTurn" : ""}
+                            value="White's Turn"
+                            colorOfIndicator="white-turn-indicator"
+                        />
+                    </div>
+                </div>
+
+                <div className="history-container">
+                                     {/* This should be a component*/}
+                    <h2> History </h2>    
+                    <ol>
+                        <li>e4 e5</li>
+                        <li>e5 e6</li>
+                    </ol>
+                </div>
+            
+            </div>
+
+        </div>
+    </body>
+</html>

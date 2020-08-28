@@ -10,8 +10,8 @@ import { movesLogic, checkDetector } from './pieces/pieceslogic.js'
 
 function Square(props) {
     return (
-        <div className={"square" + " "} id={props.shade} onClick={props.onClick}>
-            <img src={props.value}/>
+        <div className={"square"+" "} id={props.shade} onClick={props.onClick}>
+            <img src={props.value} alt=""/>
         </div>
     );
 }

@@ -1,99 +1,243 @@
 :root{
-    --square-size: min(9vh,9vw);
+    --square-size: 8vh;/*min(9vh,9vw);*/
     --margin-size: min(10vh,10vw);
+    --font-opacity: .75;
+    --board-opacity: .75;
+    --main-font-color: whitesmoke;
 }
 
+
+/*                               */
+/*                               */
+/*  G  L  O  B  A  L    C  S  S  */
+/*                               */
+/*                               */
 body {
-background: slateblue;
-height:100vh;
-width:100vw;
+    overflow: hidden;
+    font-family: 'Montserrat', sans-serif;
+    }
+
+    .title{
+            color: var(--main-font-color);
+            opacity: var(--font-opacity);        
+        }
+
+    .game-container{ /* contains board & history */
+            opacity:var(--board-opacity);
+        }
+        .board-container{
+            display: flex;
+            flex-direction: column;
+        }
+
+            /* Board CSS*/
+            .player-info{
+                width: calc(8*var(--square-size));
+                display:flex;
+                flex-direction: row;
+                justify-content: space-between;
+            }
+
+            .turn-indicator{
+                font-size: 20px;
+                font-weight: bold;
+            }
+            .white-turn-indicator{
+                background: whitesmoke;
+                color: darkslategrey;
+            }
+            .black-turn-indicator{
+                background:darkslategrey;
+                color:whitesmoke;
+            }
+            #yourTurn{
+                font-size: 20px;
+
+                opacity:.10;
+            }
+            .square {
+            display:flex;
+            align-items: center;
+            justify-content: center;
+            height: var(--square-size);
+            width: var(--square-size);
+            padding:0;
+            float: left;
+            border: 0px;
+            }
+            #dark{
+                background: rgb(77, 72, 72);
+            }
+            #light{
+                background: rgb(214, 201, 201);
+            }
+            #selected{
+                background: rgb(71, 177, 39);
+            }
+            #possibleMove{
+                background:#b2b;
+            }
+            .board-row::after{ /* wtf is this doing*/
+                clear:both;
+                content:"";
+                display:table;
+            }
+        
+        .history-container{
+            display:flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: whitesmoke;
+            color: #345;
+        }
+
+
+
+
+
+
+
+
+
+/*                                        */
+/*                                        */    
+/*  M  E  D  I  A    Q  U  E  R  I  E  S  */
+/*                                        */
+/*                                        */
+
+/* Desktop */
+@media (min-width: 1200px){
+    body{
+        display:flex;
+        justify-content: space-between;
+        background-image: url("../../images/backgrounds/waterbirdlong.jpg");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        height:100vh;
+        width:100vw;       
+        font-weight: 100;
+    }
+    
+        .title{
+            font-weight: 100;
+            font-size: 4em;/*300px;*/
+            text-align: center;
+            letter-spacing: .2em;
+        }
+
+        .game-container{ /* contains board & history */
+            display:flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+        }
+
+            .board-container{
+                margin: 0 var(--margin-size) 0 0;
+                height: 64vh;
+            }
+        
+            .history-container{
+                height: 64vh;/*calc(8*var(--square-size));*/
+                width: 250px;
+                margin: 8vh var(--margin-size) 0 0;
+            }
+
+
 }
 
-.game-container{
-    display:flex;
-    justify-content: center;
-    align-items:center;
 
+/* Tablet */
+@media (960px <= width < 1200px){
+    body{
+        display:flex;
+        justify-content: space-around;
+        /*background-image: url("../../images/backgrounds/waterbird.jpg");*/
+        background-size: 100vw;
+        height:100vh;
+        width:100vw;
+        font-weight: 100;
+    }
+    .title{
+        font-weight: 100;
+        font-size: 90px;/*300px;*/
+        text-align: center;
+        letter-spacing: 10px;
+    }
+    .game-container{ /* contains board & history */
+        display:flex;
+        justify-content: center;
+        align-items:center;
+    }
+        .board-container{
+            margin: 0 var(--margin-size) 0 0;
+            height:80vh;
+        }
+
+        .history-container{
+            height:calc(8*var(--square-size));
+            width: 250px;
+            margin: 0 var(--margin-size) 0 0;
+        }
+
+    
+
+    
 }
 
 
-.board-container{
-    display: flex;
-    flex-direction: column;
-    margin: 0 var(--margin-size) 0 0;
-    height:80vh;
+/* Mobile */
+@media (max-width:959px){
+    body{
+        display:flex;
+        justify-content: space-between;
+        background-image: url("../../images/backgrounds/waterbird.jpg");
+        background-size: 100vw;
+        height:100vh;
+        width:100vw;       
+        font-weight: 100;
+    }
+    .title{
+        font-weight: 100;
+        font-size: 90px;/*300px;*/
+        text-align: center;
+        letter-spacing: 10px;
+    }
+    .game-container{ /* contains board & history */
+        display:flex;
+        justify-content: center;
+        align-items:center;
+    }
 
-}
+        .board-container{
+            margin: 0 var(--margin-size) 0 0;
+            height:80vh;
+        }
 
-.history-container{
-    display:flex;
-    flex-direction: column;
-    align-items: center;
-    color: #345;
-    height:calc(8*var(--square-size));
-    width:250px;
-    background-color: whitesmoke;
-    margin: 0 var(--margin-size) 0 0;
-}
-
-
-
-.player-info{
-    width: calc(8*var(--square-size));
-    display:flex;
-    flex-direction: row;
-    justify-content: space-between;
-}
-
-.turn-indicator{
-    font-size: 20px;
-    font-weight: bold;
-}
-
-.white-turn-indicator{
-    background: whitesmoke;
-    color: darkslategrey;
-}
-.black-turn-indicator{
-    background:darkslategrey;
-    color:whitesmoke;
-}
-
-#yourTurn{
-    font-size: 20px;
-
-    opacity:.10;
-}
+        .history-container{
+            height:calc(8*var(--square-size));
+            width: 250px;
+            margin: 0 var(--margin-size) 0 0;
+        }
 
 
-.square {
-display:flex;
-align-items: center;
-justify-content: center;
-height: var(--square-size);
-width: var(--square-size);
-padding:0;
-float: left;
-border: 0px;
+    
 }
 
-#dark{
-    background: rgb(77, 72, 72);
-}
-#light{
-    background: rgb(214, 201, 201);
-}
-#selected{
-    background: rgb(71, 177, 39);
-}
-#possibleMove{
-    background:#b2b;
-}
+/*                                                   */
+/*                                                   */
+/*  E  N  D    M  E  D  I  A    Q  U  E  R  I  E  S  */
+/*                                                   */
+/*                                                   */
 
-.board-row:after{ /* wtf is this doing*/
-    clear:both;
-    content:"";
-    display:table;
-}
+
+
+
+
+
+
+
+
 
 
