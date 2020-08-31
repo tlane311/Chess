@@ -1,6 +1,6 @@
 import { collisionDetector } from './helperfunctions.js';
 
-function bishopLogic(selection, state) {
+export function bishopLogic(selection, state) {
     let leftReducedSelection = selection%9;
     let rightReducedSelection = selection%7;
 

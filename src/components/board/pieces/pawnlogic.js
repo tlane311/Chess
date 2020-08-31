@@ -21,7 +21,7 @@ export function whitePawnLogic(selection, state) {
     }
 
     //putting everything together
-    return initial.filter( (number) => number!==-16 && selection - selection %8 ===48) //detect if pawn has moved
+    return initial.filter( (number) => number!==-16 || selection - selection%8 ===48) //detect if pawn has moved
             .map( (number) => number + selection ) //translate to selection
             .filter( (square) => square%8 - selection%8 < 2 && square%8 - selection%8 > -2) //wall detection
             .filter( square => { //filtering collisions/blocking
@@ -56,7 +56,7 @@ export function blackPawnLogic(selection, state) {
     }
 
     //putting everything together
-    return initial.filter( (number) => number!==16 && selection - selection %8 ===8) //detect if pawn has moved
+    return initial.filter( (number) => number!==16 || selection - selection %8 ===8) //detect if pawn has moved
             .map( (number) => number + selection ) //translate to selection
             .filter( (square) => square%8 - selection%8 < 2 && square%8 - selection%8 > -2) //wall detection
             .filter( square => { //filtering collisions/blocking

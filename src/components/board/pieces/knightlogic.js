@@ -1,4 +1,4 @@
-const knightLogic = function(selection, state) {
+export const knightLogic = function(selection, state) {
     const position = state.position;
     const initial = [-17,-15,-10,-6,6,10,15,17];
     return initial

@@ -5,12 +5,12 @@ export function collisionDetector (selection, naiveMoves, state){
 
     let firstIndex = naiveMoves
     .filter(square => selection - square > 0)
-    .map( square => position[square])
-    .lastIndexOf( square.type!==null);
+    .map( square => position[square].type)
+    .lastIndexOf(null);
 
     let secondIndex=naiveMoves
-    .map(square => selection - square <= 0 ? {type: null} : position[square])
-    .indexOf( square.type!==null);
+    .map(square => selection - square <= 0 ? null : position[square].type)
+    .indexOf(null);
 
     const firstIndexCanBeTaken = position[naiveMoves[firstIndex]].color !== position[selection].color;
     const secondIndexCanBeTaken = position[naiveMoves[secondIndex]].color !== position[selection].color;

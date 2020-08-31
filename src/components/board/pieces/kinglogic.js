@@ -1,5 +1,5 @@
-function kingLogic(selection,state){
-    const position = selection.position;
+export function kingLogic(selection,state){
+    const position = state.position;
     const initial = [-9,-8,-7,-1,1,7,8,9];
     return initial
     .filter( number => !( selection%8===0 && (number === 7 || number === -9 || number === -1) ) ) //wall&corner detection

@@ -1,6 +1,6 @@
 import { collisionDetector } from './helperfunctions.js';
 
-function rookLogic(selection,state){
+export function rookLogic(selection,state){
     const reducedSelection=selection%8;
 
     let horizontalMoves = [0,1,2,3,4,5,6,7]

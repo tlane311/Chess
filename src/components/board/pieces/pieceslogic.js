@@ -1,4 +1,11 @@
 /*jslint es6 */
+import { whitePawnLogic, blackPawnLogic } from "./pawnlogic";
+import { knightLogic } from "./knightlogic";
+import { bishopLogic } from "./bishoplogic";
+import { rookLogic } from "./rooklogic";
+import { queenLogic } from "./queenlogic";
+import { kingLogic } from "./kinglogic";
+
 
 const naiveMovesLogic = {
     knight: function (selection) {
@@ -321,18 +328,10 @@ export function checkDetector (state,whiteIsNext) {
 //EXPORT
 
 export const movesLogic = {
-    whitePawn: function (selection,state) {
-        return advancedPawnLogic.whitePawn(selection,state);
-        },
-    blackPawn: function (selection,position) {
-        return advancedPawnLogic.blackPawn(selection,position);
-        },
-    knight: function (selection,position) {
-        return collisionLogic.knight(selection,position);
-        },
-    bishop: function (selection,position) {
-        return collisionLogic.bishop(selection,position);
-        },
+    whitePawn: whitePawnLogic,
+    blackPawn: blackPawnLogic,
+    knight: knightLogic,
+    bishop: bishopLogic,
     rook: function (selection,position) {
             return collisionLogic.rook(selection,position);
             },
