@@ -34,8 +34,8 @@ export function bishopLogic(selection, state) {
         .map( number => number + rightReducedSelection)
         .filter(number => number!==selection);
     }
-    leftMoves = collisionDetector(selection, leftMoves, state)
-    rightMoves = collisionDetector(selection, rightMoves, state)
+    leftMoves = collisionDetector(selection, leftMoves, state);
+    rightMoves = collisionDetector(selection, rightMoves, state);
 
     return leftMoves.concat(rightMoves);
 }
