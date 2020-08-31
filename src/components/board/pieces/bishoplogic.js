@@ -38,5 +38,4 @@ function bishopLogic(selection, state) {
     rightMoves = collisionDetector(selection, rightMoves, state)
 
     return leftMoves.concat(rightMoves);
-
 }
