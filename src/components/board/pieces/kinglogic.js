@@ -8,3 +8,8 @@ export function kingLogic(selection,state){
     .filter( number => (number >=0 && number < 64) )    //keeping returned array clean of useless values
     .filter( square => !(position[square].type !==null && position[square].color===position[selection].color));
 }
+
+const castleLogic = {
+    rook: null,
+    king: null
+}

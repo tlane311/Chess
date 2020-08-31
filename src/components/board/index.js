@@ -4,7 +4,7 @@ import React from 'react';
 //import ReactDOM from 'react-dom';
 import './board.css';
 import { firstPosition } from './pieces/pieces.js';
-import { movesLogic, checkDetector } from './pieces/pieceslogic.js'
+import { movesLogic } from './pieces/pieceslogic.js'
 
 
 
@@ -110,7 +110,7 @@ const moveHelper = { //this is supposed to help tidy up the extra props of state
 
 
 
-
+/*
 function checkHelper(state, whiteIsNext) {
     const color = whiteIsNext ? "black" : "white"; 
     if (checkDetector(state,whiteIsNext)) {
@@ -118,7 +118,7 @@ function checkHelper(state, whiteIsNext) {
     } else {
         state.check[color]=false;
     }
-}
+}*/
 
 
 
@@ -239,7 +239,7 @@ export class Game extends React.Component {
         //moveHelper at the end to clear up statuses
 
         moveHelper[nextPosition[nextSquare].type](selection,nextSquare,next);
-        checkHelper(next,whiteIsNext);
+        //checkHelper(next,whiteIsNext);
 
         this.setState({
             history: oldHistory.concat(next),
