@@ -30,7 +30,8 @@ const whitePawnLogic = function(selection, state) {
                 const takeLeftOrRight = selection%8 !== square%8 && position[square].type !==null && position[square].color !==position[selection].color ;
                 return forwardOnePossible || forwardTwoPossible || takeLeftOrRight;
             })
-            .concat(enPassantMoves);
+            .concat(enPassantMoves)
+            .filter(square => square < 64 && square >= 0);
 }
 
 const blackPawnLogic = function(selection, state) {
@@ -64,5 +65,6 @@ const blackPawnLogic = function(selection, state) {
                 const takeLeftOrRight = selection%8 !== square%8 && position[square].type !==null && position[square].color !==position[selection].color ;
                 return forwardOnePossible || forwardTwoPossible || takeLeftOrRight;
             })
-            .concat(enPassantMoves);
+            .concat(enPassantMoves)
+            .filter(square => square < 64 && square >= 0);
 }
