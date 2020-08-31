@@ -5,7 +5,7 @@ import React from 'react';
 import './board.css';
 import { firstPosition } from './pieces/pieces.js';
 import { movesLogic } from './pieces/pieceslogic.js'
-import { checkDetector } from './pieces/checklogic.js'
+import { checkDetector, checkFilter } from './pieces/checklogic.js'
 
 
 
@@ -169,11 +169,11 @@ export class Game extends React.Component {
         };
     }
 
-    possibleMoves(selected, state){ //returns array of moves
+    possibleMoves(selected, state, whiteIsNext){ //returns array of moves
         if (selected !==null){ //conditional to avoid position[null].type which throws error
             
             if (state.position[selected].type){ //nonempty square selected
-                return movesLogic[state.position[selected].type](selected,state)
+                return checkFilter(movesLogic[state.position[selected].type](selected,state), selected, state, whiteIsNext)
             } else { //empty square selected
                 return []
             }
@@ -186,9 +186,9 @@ export class Game extends React.Component {
     squareisPossibleMove(square) {  //returns boolean describing if a given square is a possible move from selected
         const history = this.state.history;
         const selected = this.state.selected;
-        
+        const whiteIsNext = this.state.whiteIsNext;
         return Boolean(
-            this.possibleMoves(selected, history[history.length -1] )
+            this.possibleMoves(selected, history[history.length -1], whiteIsNext)
             .filter(element => element === square)
             .length);
     }
