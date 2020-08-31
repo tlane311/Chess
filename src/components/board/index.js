@@ -223,8 +223,8 @@ export class Game extends React.Component {
         }
     
         const castling= false;
-        const castlingSide = true ? "king" : "queen";
-    
+        //const castlingSide = true ? "king" : "queen";
+
         if (!castling) {
             nextPosition[nextSquare]=nextPosition[selection];
             nextPosition[selection]={type: null};
@@ -303,14 +303,19 @@ export class Game extends React.Component {
         const history = this.state.history;
         const current = history[history.length - 1].position;
         const whiteIsNext=this.state.whiteIsNext;
+        const nextColor = whiteIsNext ? "white": "black";
         const whiteCheck = history[history.length -1].check.white;
         const blackCheck = history[history.length -1].check.black;
-        
+        const kingPosition = current
+        .map( object => object.type && object.color===nextColor ? object.type : null)
+        .indexOf( "king");
+
         return (
             <div className="game-container">
                 
                 <div className="board-container">
                     <h3> Black is in Check: {JSON.stringify(blackCheck)} </h3>
+                    <h1> King Position: {JSON.stringify(kingPosition)} </h1>
                     <div className="player-info">
                         <div className= "takenPieces"> takenWhitePieces </div>
                         <TurnIndicator

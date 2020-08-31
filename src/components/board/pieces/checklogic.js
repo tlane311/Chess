@@ -1,8 +1,15 @@
 import { movesLogic } from "./pieceslogic"
 
+
 export function checkDetector (state,whiteIsNext) {
     const color = !whiteIsNext ? "white" : "black";
-    const kingPosition = state.kingPosition[color]; //gives a number in position array
+    const nextColor = whiteIsNext ? "white": "black";
+    //const kingPosition = state.kingPosition[color]; //gives a number in position array
+    //search for kingPosition
+    //state.position.map( object => object.type ? [object.type, object.color])
+    const kingPosition = state.position
+    .map( object => object.type && object.color===color ? object.type : null)
+    .indexOf( "king");
     const position = state.position;
 
 
