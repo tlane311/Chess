@@ -5,6 +5,7 @@ import React from 'react';
 import './board.css';
 import { firstPosition } from './pieces/pieces.js';
 import { movesLogic } from './pieces/pieceslogic.js'
+import { checkDetector } from './pieces/checklogic.js'
 
 
 
@@ -239,8 +240,16 @@ export class Game extends React.Component {
         //moveHelper at the end to clear up statuses
 
         moveHelper[nextPosition[nextSquare].type](selection,nextSquare,next);
-        //checkHelper(next,whiteIsNext);
 
+        const currentColor = whiteIsNext ? "white" : "black";
+        const nextColor = !whiteIsNext ? "white" : "black";
+
+        const currentInCheck = checkDetector(next,!whiteIsNext);
+        const nextInCheck = checkDetector(next,whiteIsNext);
+
+        next.check[currentColor]=currentInCheck;
+        next.check[nextColor]=nextInCheck;
+        
         this.setState({
             history: oldHistory.concat(next),
             selected: null,
@@ -294,11 +303,14 @@ export class Game extends React.Component {
         const history = this.state.history;
         const current = history[history.length - 1].position;
         const whiteIsNext=this.state.whiteIsNext;
+        const whiteCheck = history[history.length -1].check.white;
+        const blackCheck = history[history.length -1].check.black;
         
         return (
             <div className="game-container">
+                
                 <div className="board-container">
-
+                    <h3> Black is in Check: {JSON.stringify(blackCheck)} </h3>
                     <div className="player-info">
                         <div className= "takenPieces"> takenWhitePieces </div>
                         <TurnIndicator
@@ -314,7 +326,7 @@ export class Game extends React.Component {
                         shade = { square => this.shade(square) }
                         whiteIsNext = { whiteIsNext }
                     />
-                    
+                    <h3> White is in Check: {JSON.stringify(whiteCheck)} </h3>
                     <div className="player-info">
                         <div className= "takenPieces"> takenBlackPieces </div>
                         <TurnIndicator
