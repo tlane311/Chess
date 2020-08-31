@@ -16,10 +16,8 @@ export function collisionDetector (selection, naiveMoves, state){
     if (firstIndex===-1) { firstIndex = 0;}
     if (secondIndex===-1) { secondIndex=Infinity;}
 
-    const firstIndexCanBeTaken = firstIndex===-1
-    ? true
-    : position[naiveMoves[firstIndex]].color !== position[selection].color;
-    
+    const firstIndexCanBeTaken = position[naiveMoves[firstIndex]].color !== position[selection].color;
+
     const secondIndexCanBeTaken = secondIndex===Infinity
     ? true
     : position[naiveMoves[secondIndex]].color !== position[selection].color;

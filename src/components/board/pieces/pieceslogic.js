@@ -332,15 +332,9 @@ export const movesLogic = {
     blackPawn: blackPawnLogic,
     knight: knightLogic,
     bishop: bishopLogic,
-    rook: function (selection,position) {
-            return collisionLogic.rook(selection,position);
-            },
-    queen: function (selection,position) {
-        return collisionLogic.queen(selection,position);
-        },
-    king: function (selection,position) {
-        return collisionLogic.king(selection,position);
-    }
+    rook: rookLogic,
+    queen: queenLogic,
+    king: kingLogic
 }
 
 
