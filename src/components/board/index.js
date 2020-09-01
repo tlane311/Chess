@@ -5,7 +5,7 @@ import React from 'react';
 import './board.css';
 import { firstPosition } from './pieces/pieces.js';
 import { movesLogic } from './pieces/pieceslogic.js'
-import { checkDetector, checkFilter } from './pieces/checklogic.js'
+import { checkDetector, checkFilter, checkmateDetector } from './pieces/checklogic.js'
 
 
 
@@ -111,39 +111,10 @@ const moveHelper = { //this is supposed to help tidy up the extra props of state
 
 
 
-/*
-function checkHelper(state, whiteIsNext) {
-    const color = whiteIsNext ? "black" : "white"; 
-    if (checkDetector(state,whiteIsNext)) {
-        state.check[color]=true;
-    } else {
-        state.check[color]=false;
-    }
-}*/
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function checkmate (state) {
-    return null;
-}
 
 
 
@@ -244,8 +215,8 @@ export class Game extends React.Component {
         const currentColor = whiteIsNext ? "white" : "black";
         const nextColor = !whiteIsNext ? "white" : "black";
 
-        const currentInCheck = checkDetector(next,!whiteIsNext);
-        const nextInCheck = checkDetector(next,whiteIsNext);
+        const currentInCheck = checkDetector(next,whiteIsNext);
+        const nextInCheck = checkDetector(next,!whiteIsNext);
 
         next.check[currentColor]=currentInCheck;
         next.check[nextColor]=nextInCheck;
@@ -306,16 +277,14 @@ export class Game extends React.Component {
         const nextColor = whiteIsNext ? "white": "black";
         const whiteCheck = history[history.length -1].check.white;
         const blackCheck = history[history.length -1].check.black;
-        const kingPosition = current
-        .map( object => object.type && object.color===nextColor ? object.type : null)
-        .indexOf( "king");
+        const mate = checkmateDetector(history[history.length -1],whiteIsNext);
 
         return (
             <div className="game-container">
                 
                 <div className="board-container">
                     <h3> Black is in Check: {JSON.stringify(blackCheck)} </h3>
-                    <h1> King Position: {JSON.stringify(kingPosition)} </h1>
+                    <h1> {JSON.stringify(nextColor)} is Mated: {JSON.stringify(mate)} </h1>
                     <div className="player-info">
                         <div className= "takenPieces"> takenWhitePieces </div>
                         <TurnIndicator
