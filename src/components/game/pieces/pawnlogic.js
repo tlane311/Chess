@@ -7,7 +7,7 @@ export function whitePawnLogic(selection, state) {
     const oppositePawn = 'blackPawn';
 
     const leftAdjacentIsPawn = selection%8 > 0 ? position[selection-1].type === oppositePawn : false;
-    const leftAdjacentIsPassing = Boolean(state.enPassant[position[selection-1].id]); 
+    const leftAdjacentIsPassing = Boolean(state.enPassant[position[selection-1].id]);
 
     const rightAdjacentIsPawn = selection%8 < 8 ? position[selection+1].type === oppositePawn : false;
     const rightAdjacentIsPassing = Boolean(state.enPassant[position[selection+1].id]);

@@ -197,9 +197,7 @@ export const firstPosition = {
             kingside: true
         }
     },
-    enPassant:{
-
-    },
+    enPassant: {},
     takenWhitePieces: [],
     takenBlackPieces: []
 }

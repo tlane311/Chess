@@ -3,7 +3,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { Game } from './components/board/index.js';
+import { Game } from './components/game/index.js';
 
 ReactDOM.render(
     <Game />,
