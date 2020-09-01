@@ -25,13 +25,30 @@ export function checkDetector (state,whiteIsNext) {
 }
 
 export function checkFilter (unfilteredMoves, selection, state, whiteIsNext){
-    return unfilteredMoves.filter( (square) => {
+    const filterCallback = (square) => {
         let nextState = JSON.parse(JSON.stringify(state));  //make copy of board to avoid mutation problems
         let nextPosition = nextState.position;
         nextPosition[square] = nextPosition[selection];     //execute the move
         nextPosition[selection] = {type: null};             //clear up old space
         return !checkDetector(nextState,whiteIsNext)
-    });
+    }
+
+    if (state.position[selection].type !=="king") {
+        return unfilteredMoves.filter( filterCallback);
+    } else { //for king, you can't castle out of or through check
+        let firstFilter = unfilteredMoves.filter(filterCallback);
+
+        if (!firstFilter.map(square => square - selection).some(number => number === 1)) {
+            firstFilter=firstFilter.filter( square => square - selection!==2);
+        }
+        if (!firstFilter.map(square => square - selection).some(number => number === -1)) {
+            firstFilter=firstFilter.filter( square => square - selection!==-2);
+        }
+        if (checkDetector(state,whiteIsNext)){
+            firstFilter=firstFilter.filter( square => square - selection !==2 || square - selection !== -2);
+        }
+        return firstFilter;
+    }
 }
 
 

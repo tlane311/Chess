@@ -1,7 +1,7 @@
 import { checkDetector } from './pieces/checklogic.js'
 
-//Helpers in this file are used exclusively to mutate next: Be wary!
-//next pass through, we should think about making these functional
+//Helpers in this file are used exclusively to mutate nextState: Be wary!
+//next pass through, we should think about making these functions
 
 
 export const stateHelper = {//this is supposed to help tidy up the extra props of state

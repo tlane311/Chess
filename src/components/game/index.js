@@ -1,7 +1,6 @@
 /*jslint es6 */
 
 import React from 'react';
-//import ReactDOM from 'react-dom';
 import './board.css';
 import { firstPosition } from './pieces/pieces.js';
 import { movesLogic } from './pieces/pieceslogic.js'
