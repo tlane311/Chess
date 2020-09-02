@@ -60,12 +60,11 @@ export const moveHelper = {
         if ( (selection - 9 ===  nextSquare || selection - 7 === nextSquare) && !nextState.position[nextSquare].type) {
             nextState.position[nextSquare + 8] = {type: null};
         }
-        //move original pawn next
-        basicMoveHelper(selection, nextSquare, nextState)
+        //move original pawn last
+        if (nextSquare > 7) { //some redundancy here
+            basicMoveHelper(selection, nextSquare, nextState)
+        }
 
-
-
-        //promotion helper
 
     },
     blackPawn: function (selection, nextSquare, nextState) {
@@ -74,10 +73,11 @@ export const moveHelper = {
             nextState.position[nextSquare - 8] = {type: null};
         }
 
-        //move original pawn next
-        basicMoveHelper(selection, nextSquare, nextState)
+        //move original pawn last
+        if (nextSquare < 56) {
+            basicMoveHelper(selection, nextSquare, nextState)
+        }
 
-        //promotion helper
         },
     knight: function (selection, nextSquare, nextState) { basicMoveHelper(selection, nextSquare, nextState) },
     bishop: function (selection, nextSquare, nextState) { basicMoveHelper(selection, nextSquare, nextState) },

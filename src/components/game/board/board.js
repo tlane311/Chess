@@ -1,5 +1,5 @@
 import React from 'react';
-import { Promoter, promotionLocator } from '../promoter/promoter.js'
+import { Promoter } from '../promoter/promoter.js'
 
 export function Square(props) {
     return (
@@ -12,29 +12,35 @@ export function Square(props) {
 
 export class Board extends React.Component {
     
-    containsPromoter(number,state){
-        if (number === promotionLocator(state)) {
-        return (
-            <Promoter
-                promotionDisplayed = "show-promoter"
-                promotionColor = {number > 55 ? "white" : "black"}
-            />
-        )}
+    containsPromoter(number,promotionLocation){
+        if (number === promotionLocation) {
+            return (
+                <Promoter
+                    promotionDisplayed = "show-promoter"
+                    promotionColor = {number > 55 ? "white" : "black"}
+                    onClick ={ (type) => {this.props.promotionClick(type)} }
+                />
+        )} else {
+            return null;
+        }
     }
 
 
     
     renderSquare(number){
         return (
-            <div><Square
-                shade={this.props.shade(number)}
-                value={ this.containsPromoter(number, this.props.currentState) ? "" : this.props.position[number].img }
-                onClick={ () => this.props.onClick(number) }
-                promoter= {this.containsPromoter(number, this.props.currentState)}
-            />
+            <div>
+                <Square
+                    shade={this.props.shade(number)}
+                    value={ this.containsPromoter(number, this.props.promotionLocation) 
+                    ? "" : this.props.position[number].img }
+                    onClick={ () => this.props.onClick(number) }
+                    promoter= {this.containsPromoter(number,this.props.promotionLocation)}
+                />
             </div>
         );
     }
+
     renderRow(number){
         return (
             <div className="board-row">

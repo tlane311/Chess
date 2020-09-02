@@ -12,30 +12,23 @@ import whiteknight from "../../../images/chesspieces/whiteknight.svg";
 import whitequeen from "../../../images/chesspieces/whitequeen.svg";
 
 
-export function promotionDetector(state) {
-    const position = state.position;
-
-    const promotionCallback = (square,index) => (index < 8 && square.type==="whitePawn") || (index > 55 && square.type==="blackPawn");
-
-    return position.some(promotionCallback);
-}
-
-
-export function promotionLocator(state){
-    const position = state.position;
-    const promotionCallback = (square,index) => (index < 8 && square.type==="whitePawn") || (index > 55 && square.type==="blackPawn");
-    if (promotionDetector(state)) {
-        return position.findIndex(promotionCallback);
-    }
+export function PromotionSquare(props) {
+    return (
+            <Square
+                shade = "neutralshade"
+                value = {props.value}
+                onClick = {props.onClick}
+            />
+    );
 }
 
 export class Promoter extends React.Component {
     renderPromotionSquare(obj){
         return (
-            <Square
+            <PromotionSquare
                 shade = "neutralshade"
                 value = {obj.img}
-                onClick = {() => {}}
+                onClick = {() => this.props.onClick(obj.type)}
             />
         )
     }

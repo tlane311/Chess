@@ -5,7 +5,6 @@ import './board.css';
 import { firstPosition } from './pieces/pieces.js';
 import { movesLogic } from './pieces/pieceslogic.js'
 import { checkFilter, checkmateDetector } from './pieces/checklogic.js'
-import { promotionLocator } from './promoter/promoter.js';
 import { TurnIndicator } from './turnindicator/turnindicator.js';
 import { Board } from './board/board.js';
 import { moveHelper, checkHelper, stateHelper} from './gamehelpers.js'
@@ -20,7 +19,9 @@ export class Game extends React.Component {
         this.state = {
             history: [firstPosition],
             selected: null,
-            whiteIsNext: true 
+            whiteIsNext: true,
+            promotionStatus: false,
+            promotionLocation: null
         };
     }
 
@@ -70,29 +71,41 @@ export class Game extends React.Component {
 
         let currentPosition = currentState.position.slice(); //copy
         let next=currentState; //redundant code but should make this bit more readable
-        const nextSquareIsOccupied = Boolean(currentPosition[nextSquare].type);
         let nextPosition=currentState.position;
+
+        const nextSquareIsOccupied = Boolean(currentPosition[nextSquare].type);
         if (nextSquareIsOccupied){
             whiteIsNext
             ? next.takenBlackPieces.push(currentPosition[nextSquare])
             : next.takenWhitePieces.push(currentPosition[nextSquare]);
         }
+
         next.enPassant={};
-        moveHelper[currentPosition[selection].type](selection, nextSquare, next) //modifies next by moving pieces
-        //next.position=nextPosition;
-        //next.enPassant={}; <--add to moveHelper to reset enPassant
-        //updates takenPieces
 
-        checkHelper(next, whiteIsNext)
+        const promotionDetection = 
+        (nextPosition[selection].type==="whitePawn" && nextSquare < 8) 
+        || (nextPosition[selection].type==="blackPawn" && nextSquare > 55)
 
-        stateHelper[nextPosition[nextSquare].type](selection,nextSquare,next)
+        if (!promotionDetection) {
+            moveHelper[currentPosition[selection].type](selection, nextSquare, next) //modifies next by moving pieces
+            //updates takenPieces
 
-        //every key of next should be updated at this point
-        this.setState({
-            history: oldHistory.concat(next),
-            selected: null,
-            whiteIsNext: !whiteIsNext
-        });
+            checkHelper(next, whiteIsNext)
+
+            stateHelper[nextPosition[nextSquare].type](selection,nextSquare,next)
+
+            //every key of next should be updated at this point
+            this.setState({
+                history: oldHistory.concat(next),
+                selected: null,
+                whiteIsNext: !whiteIsNext
+            });
+        } else {
+            this.setState({
+                promotionStatus: true,
+                promotionLocation: nextSquare,
+            });
+        }
 
     }
 
@@ -145,6 +158,8 @@ export class Game extends React.Component {
         const blackCheck = history[history.length -1].check.black;
         const mate = checkmateDetector(history[history.length -1],whiteIsNext);
         const currentState= history[history.length -1];
+        const promotionStatus = this.state.promotionStatus;
+        const promotionLocation = this.state.promotionLocation;
         return (
             <div className="game-container">
                 
@@ -159,15 +174,15 @@ export class Game extends React.Component {
                         colorOfIndicator="black-turn-indicator"
                         /> 
                     </div>
-                    <div>
-                       Promotion: {promotionLocator(currentState)}
-                    </div>
                     <Board 
                         position= { current }
                         onClick = {square => this.handleClick(square)}
                         shade = { square => this.shade(square) }
                         whiteIsNext = { whiteIsNext }
                         currentState={currentState}
+                        promotionStatus={ promotionStatus }
+                        promotionLocation={ promotionLocation }
+                        promotionClick = {(type) => {alert(type)}}
                     />
 
                     <h3> White is in Check: {JSON.stringify(whiteCheck)} </h3>
