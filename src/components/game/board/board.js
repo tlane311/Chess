@@ -17,8 +17,8 @@ export class Board extends React.Component {
             return (
                 <Promoter
                     promotionDisplayed = "show-promoter"
-                    promotionColor = {number > 55 ? "white" : "black"}
-                    onClick ={ (type) => {this.props.promotionClick(type)} }
+                    promotionColor = {number > 55 ? "black" : "white"}
+                    onClick ={ (obj) => {this.props.onClick(obj)} }
                 />
         )} else {
             return null;
@@ -34,7 +34,9 @@ export class Board extends React.Component {
                     shade={this.props.shade(number)}
                     value={ this.containsPromoter(number, this.props.promotionLocation) 
                     ? "" : this.props.position[number].img }
-                    onClick={ () => this.props.onClick(number) }
+                    onClick={ () => {
+                        this.props.onClick(number);
+                        console.log('clicked on regular square') }}
                     promoter= {this.containsPromoter(number,this.props.promotionLocation)}
                 />
             </div>

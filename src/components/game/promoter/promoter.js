@@ -28,7 +28,10 @@ export class Promoter extends React.Component {
             <PromotionSquare
                 shade = "neutralshade"
                 value = {obj.img}
-                onClick = {() => this.props.onClick(obj.type)}
+                onClick = {() => {
+                    this.props.onClick(obj);
+                    console.log('clicked on promotion square')
+                }}
             />
         )
     }

@@ -99,7 +99,7 @@ body {
         position: relative;
         display: flex;
         flex-direction: column;
-        z-index: 2;
+        z-index: 50;
         top: 12vh;
     }
 

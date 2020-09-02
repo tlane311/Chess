@@ -1,7 +1,7 @@
 //auxillary functions to help with collisionLogic
 export function collisionDetector (selection, naiveMoves, state){
     const position = state.position;
-
+    if (naiveMoves.length===0) {return naiveMoves}
     let firstIndex = naiveMoves
     .filter(square => selection - square > 0)
     .map( square => position[square].type)
