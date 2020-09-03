@@ -71,7 +71,7 @@ export class Game extends React.Component {
 
         const currentConstellation = JSON.parse(JSON.stringify(this.state.constellation)); //copy
         const currentPosition = JSON.parse(JSON.stringify(currentConstellation.position)); //copy
-
+        const pawnType = currentPosition[selection].type;
         //redundant code but should make this bit more readable
         let nextConstellation=currentConstellation;         //this is just a pointer to currentConstellation which we will mutate
         let nextPosition=currentConstellation.position;     //this is just a pointer to currentConstellation.position which we will mutate
@@ -79,8 +79,8 @@ export class Game extends React.Component {
         const nextSquareIsOccupied = Boolean(currentPosition[promotionLocation].type);
         if (nextSquareIsOccupied){
             whiteIsNext
-            ? nextConstellation.takenBlackPieces.push(currentPosition[nextSquare])
-            : nextConstellation.takenWhitePieces.push(currentPosition[nextSquare]);
+            ? nextConstellation.takenBlackPieces.push([currentPosition[nextSquare],oldHistory.length])
+            : nextConstellation.takenWhitePieces.push([currentPosition[nextSquare],oldHistory.length]);
         }
         //moving pieces
         nextPosition[selection] = {type: null};
@@ -90,7 +90,7 @@ export class Game extends React.Component {
         checkHelper(nextConstellation, whiteIsNext)
 
         this.setState({
-            history: oldHistory.concat([selection,promotionLocation]),
+            history: oldHistory.concat([[pawnType,nextSquare.type,selection,promotionLocation]]),
             constellation: nextConstellation,
             selected: null,
             whiteIsNext: !whiteIsNext,
@@ -120,8 +120,8 @@ export class Game extends React.Component {
             const nextSquareIsOccupied = Boolean(currentPosition[nextSquare].type);
             if (nextSquareIsOccupied){
                 whiteIsNext
-                ? nextConstellation.takenBlackPieces.push(currentPosition[nextSquare])
-                : nextConstellation.takenWhitePieces.push(currentPosition[nextSquare]);
+                ? nextConstellation.takenBlackPieces.push([currentPosition[nextSquare],oldHistory.length])
+                : nextConstellation.takenWhitePieces.push([currentPosition[nextSquare],oldHistory.length]);
             }
 
             nextConstellation.enPassant={};
@@ -138,7 +138,7 @@ export class Game extends React.Component {
                 stateHelper[nextPosition[nextSquare].type](selection,nextSquare,nextConstellation);
 
                 this.setState({
-                    history: oldHistory.concat([selection,nextSquare]),
+                    history: oldHistory.concat([[nextPosition[nextSquare].type,selection,nextSquare]]),
                     constellation: nextConstellation,
                     selected: null,
                     whiteIsNext: !whiteIsNext
