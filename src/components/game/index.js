@@ -9,15 +9,12 @@ import { TurnIndicator } from './turnindicator/turnindicator.js';
 import { Board } from './board/board.js';
 import { moveHelper, checkHelper, stateHelper} from './gamehelpers.js'
 
-
-
-
 export class Game extends React.Component {
-
     constructor(props) {
         super(props);
         this.state = {
-            history: [firstPosition],
+            constellation: firstPosition,
+            history: [],
             selected: null,
             whiteIsNext: true,
             promotionStatus: false,
@@ -25,11 +22,11 @@ export class Game extends React.Component {
         };
     }
 
-    possibleMoves(selected, state, whiteIsNext){ //returns array of moves
+    possibleMoves(selected, constellation, whiteIsNext){ //returns array of moves
         if (selected !==null){ //conditional to avoid position[null].type which throws error
 
-            if (state.position[selected].type){ //nonempty square selected
-                return checkFilter(movesLogic[state.position[selected].type](selected,state), selected, state, whiteIsNext)
+            if (constellation.position[selected].type){ //nonempty square selected
+                return checkFilter(movesLogic[constellation.position[selected].type](selected,constellation), selected, constellation, whiteIsNext)
             } else { //empty square selected
                 return []
             }
@@ -40,20 +37,20 @@ export class Game extends React.Component {
     }
 
     squareIsPossibleMove(square) {  //returns boolean describing if a given square is a possible move from selected
-        const history = this.state.history;
+        const constellation = this.state.constellation;
         const selected = this.state.selected;
         const whiteIsNext = this.state.whiteIsNext;
         return Boolean(
-            this.possibleMoves(selected, history[history.length -1], whiteIsNext)
+            this.possibleMoves(selected, constellation, whiteIsNext)
             .filter(element => element === square)
             .length);
     }
 
     shade(square){//adds a css id to each square that decides shade
-        const history = JSON.parse(JSON.stringify(this.state.history));
+        const constellation = this.state.constellation;
         let squareIsPossibleMove = this.squareIsPossibleMove(square)
-        
-        if (square===this.state.selected  && history[history.length -1].position[square].type){
+
+        if (square===this.state.selected  && constellation.position[square].type){
             //if square is selected and square is not empty
             return "selected"
         } else if (squareIsPossibleMove) {
@@ -64,31 +61,37 @@ export class Game extends React.Component {
         }
     }
 
-    promotionHandler(selection,nextSquare,history,whiteIsNext,promotionLocation){
+    promotionHandler(selection,nextSquare){
+        //during promotion nextSquare is actually a piece e.g. { type: "queen", color: "white", id: "promoted", img: ...}
+        const oldHistory = JSON.parse(JSON.stringify(this.state.history));
+        const whiteIsNext = this.state.whiteIsNext;
+        const promotionLocation = this.state.promotionLocation;
 
-        const oldHistory = JSON.parse(JSON.stringify(history));
-        const freshHistory = JSON.parse(JSON.stringify(history)); //need multiple history because js keeps live references to subobjects
-        const currentState = freshHistory[history.length - 1];
+        //const freshHistory = JSON.parse(JSON.stringify(history)); //need multiple history because js keeps live references to subobjects
 
-        let currentPosition = currentState.position.slice(); //copy
-        let next=currentState; //redundant code but should make this bit more readable
-        let nextPosition=currentState.position;
+        const currentConstellation = JSON.parse(JSON.stringify(this.state.constellation)); //copy
+        const currentPosition = JSON.parse(JSON.stringify(currentConstellation.position)); //copy
+
+        //redundant code but should make this bit more readable
+        let nextConstellation=currentConstellation;         //this is just a pointer to currentConstellation which we will mutate
+        let nextPosition=currentConstellation.position;     //this is just a pointer to currentConstellation.position which we will mutate
+
         const nextSquareIsOccupied = Boolean(currentPosition[promotionLocation].type);
         if (nextSquareIsOccupied){
             whiteIsNext
-            ? next.takenBlackPieces.push(currentPosition[nextSquare])
-            : next.takenWhitePieces.push(currentPosition[nextSquare]);
+            ? nextConstellation.takenBlackPieces.push(currentPosition[nextSquare])
+            : nextConstellation.takenWhitePieces.push(currentPosition[nextSquare]);
         }
         //moving pieces
-        nextPosition[selection]={type: null};
-        nextPosition[promotionLocation]=nextSquare;
-        console.log("don't call me twice")
+        nextPosition[selection] = {type: null};
+        nextPosition[promotionLocation] = nextSquare;
 
 
-        checkHelper(next, whiteIsNext)
+        checkHelper(nextConstellation, whiteIsNext)
 
         this.setState({
-            history: oldHistory.concat(next),
+            history: oldHistory.concat([selection,promotionLocation]),
+            constellation: nextConstellation,
             selected: null,
             whiteIsNext: !whiteIsNext,
             promotionLocation: null,
@@ -97,47 +100,50 @@ export class Game extends React.Component {
 
     }
 
-    moveHandler(selection, nextSquare, history, whiteIsNext,promotionLocation) {
-        const oldHistory = JSON.parse(JSON.stringify(history));
-        const freshHistory = JSON.parse(JSON.stringify(history)); //need multiple history because js keeps live references to subobjects
-        const currentState = freshHistory[history.length - 1];
+    moveHandler(selection, nextSquare) {
+        const oldHistory = JSON.parse(JSON.stringify(this.state.history));
+        const whiteIsNext = this.state.whiteIsNext;
+        const promotionLocation = this.state.promotionLocation;
 
-        let currentPosition = currentState.position.slice(); //copy
-        let next=currentState; //redundant code but should make this bit more readable
-        let nextPosition=currentState.position;
+        //const freshHistory = JSON.parse(JSON.stringify(history)); //need multiple history because js keeps live references to subobjects
+
+        const currentConstellation = JSON.parse(JSON.stringify(this.state.constellation)); //copy
+        const currentPosition = JSON.parse(JSON.stringify(currentConstellation.position)); //copy
+
+        //redundant code but should make this bit more readable
+        let nextConstellation=currentConstellation;         //this is just a pointer to currentConstellation which we will mutate
+        let nextPosition=currentConstellation.position;     //this is just a pointer to currentConstellation.position which we will mutate
 
         if (promotionLocation !== null){
-            this.promotionHandler(selection,nextSquare,history,whiteIsNext,promotionLocation)
+            this.promotionHandler(selection,nextSquare)
         } else {
             const nextSquareIsOccupied = Boolean(currentPosition[nextSquare].type);
             if (nextSquareIsOccupied){
                 whiteIsNext
-                ? next.takenBlackPieces.push(currentPosition[nextSquare])
-                : next.takenWhitePieces.push(currentPosition[nextSquare]);
+                ? nextConstellation.takenBlackPieces.push(currentPosition[nextSquare])
+                : nextConstellation.takenWhitePieces.push(currentPosition[nextSquare]);
             }
 
-            next.enPassant={};
+            nextConstellation.enPassant={};
 
-            const promotionDetection = 
-            (nextPosition[selection].type==="whitePawn" && nextSquare < 8) 
-            || (nextPosition[selection].type==="blackPawn" && nextSquare > 55)
+            const promotionDetection =
+            (nextPosition[selection].type==="whitePawn" && nextSquare < 8)
+            || (nextPosition[selection].type==="blackPawn" && nextSquare > 55);
 
             if (!promotionDetection) {
-                moveHelper[currentPosition[selection].type](selection, nextSquare, next) //modifies next by moving pieces
-                //updates takenPieces
+                moveHelper[currentPosition[selection].type](selection, nextSquare, nextConstellation);
 
-                checkHelper(next, whiteIsNext)
+                checkHelper(nextConstellation, whiteIsNext);
 
-                stateHelper[nextPosition[nextSquare].type](selection,nextSquare,next)
+                stateHelper[nextPosition[nextSquare].type](selection,nextSquare,nextConstellation);
 
-                //every key of next should be updated at this point
                 this.setState({
-                    history: oldHistory.concat(next),
+                    history: oldHistory.concat([selection,nextSquare]),
+                    constellation: nextConstellation,
                     selected: null,
                     whiteIsNext: !whiteIsNext
                 });
             } else {
-                
                 this.setState({
                     promotionStatus: true,
                     promotionLocation: nextSquare,
@@ -149,19 +155,17 @@ export class Game extends React.Component {
     }
 
 
-    squareIsPromotion(square) {
-        return square.id==="promoted";
-    }
+    squareIsPromotion = (square) => square.id==="promoted";
 
     handleClick(square) {
-        console.log("how many times am I called?")
-        const oldhistory = JSON.parse(JSON.stringify(this.state.history));
         const history = JSON.parse(JSON.stringify(this.state.history)); //need new history because js keeps live references to subobjects
-        const current = history[history.length - 1];
+        const currentConstellation = JSON.parse(JSON.stringify(this.state.constellation));
+        const currentPosition = currentConstellation.position;
         const selected = this.state.selected;
         const whiteIsNext = this.state.whiteIsNext;
+        const promotionLocation = this.state.promotionLocation
         //nothing selected, selecting piece of correct color
-        if (selected===null && current.position[square].type !== null && (current.position[square].color==="white")===whiteIsNext) {
+        if (selected===null && currentPosition[square].type !== null && (currentPosition[square].color==="white")===whiteIsNext) {
             this.setState({
                 selected: square
             });
@@ -170,11 +174,9 @@ export class Game extends React.Component {
         if (selected !== null) {
             if (selected !== square){ //clicking on non-selected square
                 if (this.squareIsPromotion(square)){
-                    this.moveHandler(selected,square,this.state.history,this.state.whiteIsNext,this.state.promotionLocation);
-                    console.log("promotion square handled")
-                } else if (this.squareIsPossibleMove(square) && square !== this.state.promotionLocation) {//move will be executed
-                    this.moveHandler(selected,square,this.state.history,this.state.whiteIsNext,this.state.promotionLocation);
-                    console.log("regular square handled")
+                    this.moveHandler(selected,square);
+                } else if (this.squareIsPossibleMove(square) && square !== promotionLocation) {//move will be executed
+                    this.moveHandler(selected,square);
                 } else { //clicking on a not possible move square
                     if (this.state.promotionStatus) {
                         this.setState({
@@ -182,7 +184,7 @@ export class Game extends React.Component {
                             promotionLocation: null,
                         });
                     }
-                    if (current.position[square].type !== null && (current.position[square].color==="white")===whiteIsNext) { //selecting different piece
+                    if (currentPosition[square].type !== null && (currentPosition[square].color==="white")===whiteIsNext) { //selecting different piece
                         this.setState({
                             selected: square
                         });
@@ -199,45 +201,35 @@ export class Game extends React.Component {
 
     render() {
         const history = this.state.history;
-        const current = history[history.length - 1].position;
-        const whiteIsNext=this.state.whiteIsNext;
-        const nextColor = whiteIsNext ? "white": "black";
-        const whiteCheck = history[history.length -1].check.white;
-        const blackCheck = history[history.length -1].check.black;
-        const mate = checkmateDetector(history[history.length -1],whiteIsNext);
-        const currentState= history[history.length -1];
-        const promotionStatus = this.state.promotionStatus;
+        const currentConstellation = this.state.constellation;
+        const currentPosition = currentConstellation.position;
+        const whiteIsNext = this.state.whiteIsNext;
         const promotionLocation = this.state.promotionLocation;
-        const selected = this.state.selected;
+        //const checkmate = checkmateDetector(current,whiteIsNext); //need to work this in somehow
+        //need to add draw
+
         return (
             <div className="game-container">
-                
+
                 <div className="board-container">
-                    <h3> Black is in Check: {JSON.stringify(blackCheck)} </h3>
-                    <h1> {JSON.stringify(nextColor)} is Mated: {JSON.stringify(mate)} </h1>
                     <div className="player-info">
                         <div className= "takenPieces"> takenWhitePieces </div>
                         <TurnIndicator
-                        turn={!whiteIsNext ? "" : "yourTurn"}
-                        value="Black's Turn"
-                        colorOfIndicator="black-turn-indicator"
+                            turn = {!whiteIsNext ? "" : "yourTurn"}
+                            value = "Black's Turn"
+                            colorOfIndicator = "black-turn-indicator"
                         /> 
                     </div>
                     <Board 
-                        position= { current }
+                        position= { currentPosition }
                         onClick = {square => {
                             this.handleClick(square);
-                            console.log('props being called')
                             }}
                         shade = { square => this.shade(square) }
                         whiteIsNext = { whiteIsNext }
-                        currentState={currentState}
-                        promotionStatus={ promotionStatus }
+                        currentState={currentConstellation}
                         promotionLocation={ promotionLocation }
-                        promotionClick = {type => {alert(type.id)}}
                     />
-
-                    <h3> White is in Check: {JSON.stringify(whiteCheck)} </h3>
                     <div className="player-info">
                         <div className= "takenPieces"> takenBlackPieces </div>
                         <TurnIndicator
@@ -252,8 +244,7 @@ export class Game extends React.Component {
                 <div className="history-container">
                                      {/* This should be a component*/}
                     <h2> History </h2>
-                    <p>PromotionLocation: {JSON.stringify(current[promotionLocation])}</p>  
-                    <p>Selected: {JSON.stringify(selected)}</p>  
+                    <p>{JSON.stringify(history)}</p>
                     <ol>
                         <li>e4 e5</li>
                         <li>e5 e6</li>

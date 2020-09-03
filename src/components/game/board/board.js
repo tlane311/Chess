@@ -24,8 +24,6 @@ export class Board extends React.Component {
             return null;
         }
     }
-
-
     
     renderSquare(number){
         return (
@@ -34,9 +32,7 @@ export class Board extends React.Component {
                     shade={this.props.shade(number)}
                     value={ this.containsPromoter(number, this.props.promotionLocation) 
                     ? "" : this.props.position[number].img }
-                    onClick={ () => {
-                        this.props.onClick(number);
-                        console.log('clicked on regular square') }}
+                    onClick={ () => this.props.onClick(number) }
                     promoter= {this.containsPromoter(number,this.props.promotionLocation)}
                 />
             </div>
