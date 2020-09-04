@@ -1,13 +1,15 @@
 /*jslint es6 */
 
 import React from 'react';
-import './board.css';
+import './game.css';
 import { firstPosition } from './pieces/pieces.js';
 import { movesLogic } from './pieces/pieceslogic.js'
 import { checkFilter, checkmateDetector } from './pieces/checklogic.js'
 import { TurnIndicator } from './turnindicator/turnindicator.js';
 import { Board } from './board/board.js';
 import { moveHelper, checkHelper, stateHelper} from './gamehelpers.js'
+import { History } from './history/history';
+import { socketFunction } from '../../api.js';
 
 export class Game extends React.Component {
     constructor(props) {
@@ -18,15 +20,24 @@ export class Game extends React.Component {
             selected: null,
             whiteIsNext: true,
             promotionStatus: false,
-            promotionLocation: null
+            promotionLocation: null,
+            input: 'empty'
         };
+
+        socketFunction( (err,input) => this.setState({input}));
     }
 
-    possibleMoves(selected, constellation, whiteIsNext){ //returns array of moves
-        if (selected !==null){ //conditional to avoid position[null].type which throws error
+    
+
+    possibleMoves(selected){ //returns array of moves
+        const constellation = this.state.constellation;
+        const whiteIsNext = this.state.whiteIsNext;
+
+        if (selected !==null){ //conditional to avoid constellation.position[null].type which throws error
+            const currentPiece = constellation.position[selected].type;
 
             if (constellation.position[selected].type){ //nonempty square selected
-                return checkFilter(movesLogic[constellation.position[selected].type](selected,constellation), selected, constellation, whiteIsNext)
+                return checkFilter(movesLogic[currentPiece](selected,constellation), selected, constellation, whiteIsNext)
             } else { //empty square selected
                 return []
             }
@@ -37,11 +48,9 @@ export class Game extends React.Component {
     }
 
     squareIsPossibleMove(square) {  //returns boolean describing if a given square is a possible move from selected
-        const constellation = this.state.constellation;
         const selected = this.state.selected;
-        const whiteIsNext = this.state.whiteIsNext;
         return Boolean(
-            this.possibleMoves(selected, constellation, whiteIsNext)
+            this.possibleMoves(selected)
             .filter(element => element === square)
             .length);
     }
@@ -67,11 +76,10 @@ export class Game extends React.Component {
         const whiteIsNext = this.state.whiteIsNext;
         const promotionLocation = this.state.promotionLocation;
 
-        //const freshHistory = JSON.parse(JSON.stringify(history)); //need multiple history because js keeps live references to subobjects
-
         const currentConstellation = JSON.parse(JSON.stringify(this.state.constellation)); //copy
         const currentPosition = JSON.parse(JSON.stringify(currentConstellation.position)); //copy
         const pawnType = currentPosition[selection].type;
+
         //redundant code but should make this bit more readable
         let nextConstellation=currentConstellation;         //this is just a pointer to currentConstellation which we will mutate
         let nextPosition=currentConstellation.position;     //this is just a pointer to currentConstellation.position which we will mutate
@@ -157,8 +165,7 @@ export class Game extends React.Component {
 
     squareIsPromotion = (square) => square.id==="promoted";
 
-    handleClick(square) {
-        const history = JSON.parse(JSON.stringify(this.state.history)); //need new history because js keeps live references to subobjects
+    async handleClick(square) {
         const currentConstellation = JSON.parse(JSON.stringify(this.state.constellation));
         const currentPosition = currentConstellation.position;
         const selected = this.state.selected;
@@ -174,9 +181,15 @@ export class Game extends React.Component {
         if (selected !== null) {
             if (selected !== square){ //clicking on non-selected square
                 if (this.squareIsPromotion(square)){
-                    this.moveHandler(selected,square);
+                    await this.moveHandler(selected,square);
+                    if (checkmateDetector(this.state.constellation,this.state.whiteIsNext)) {alert("Mate!")}
                 } else if (this.squareIsPossibleMove(square) && square !== promotionLocation) {//move will be executed
-                    this.moveHandler(selected,square);
+                    await this.moveHandler(selected,square);
+                    if (checkmateDetector(this.state.constellation,this.state.whiteIsNext)) {
+                        alert("Mate!")}
+                    if (true) {
+                        console.log("move happened")
+                    }
                 } else { //clicking on a not possible move square
                     if (this.state.promotionStatus) {
                         this.setState({
@@ -198,6 +211,10 @@ export class Game extends React.Component {
         }
     }
 
+    pingServer() {
+
+    }
+
 
     render() {
         const history = this.state.history;
@@ -210,7 +227,6 @@ export class Game extends React.Component {
 
         return (
             <div className="game-container">
-
                 <div className="board-container">
                     <div className="player-info">
                         <div className= "takenPieces"> takenWhitePieces </div>
@@ -240,16 +256,9 @@ export class Game extends React.Component {
                     </div>
 
                 </div>
-
-                <div className="history-container">
-                                     {/* This should be a component*/}
-                    <h2> History </h2>
-                    <p>{JSON.stringify(history)}</p>
-                    <ol>
-                        <li>e4 e5</li>
-                        <li>e5 e6</li>
-                    </ol>
-                </div>
+                <History
+                    completeHistory = { history }
+                />
             </div>
         )
     }

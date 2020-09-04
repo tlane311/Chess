@@ -92,7 +92,6 @@ export const moveHelper = {
 }
 
 
-//done
 export function checkHelper(nextState, whiteIsNext){ //checkHelper updates the nextState.check using checkDetector()
     const currentColor = whiteIsNext ? "white" : "black";
     const nextColor = !whiteIsNext ? "white" : "black";

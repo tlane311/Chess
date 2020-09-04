@@ -1,0 +1,295 @@
+:root{
+    --square-size: 8vh;/*min(9vh,9vw);*/
+    --margin-size: 4vw;/*min(10vh,10vw);*/
+    --font-opacity: .75;
+    --board-opacity: .75;
+    --main-font-color: whitesmoke;
+}
+
+
+/*                               */
+/*                               */
+/*  G  L  O  B  A  L    C  S  S  */
+/*                               */
+/*                               */
+body {
+    overflow: hidden;
+    font-family: 'Montserrat', sans-serif;
+    }
+
+    .title{
+            color: var(--main-font-color);
+            opacity: var(--font-opacity);        
+        }
+
+    .game-container{ /* contains board & history */
+            opacity:var(--board-opacity);
+        }
+        .board-container{
+            display: flex;
+            flex-direction: column;
+        }
+
+            /* Board CSS*/
+            .player-info{
+                width: calc(8*var(--square-size));
+                display:flex;
+                flex-direction: row;
+                justify-content: space-between;
+            }
+
+            .turn-indicator{
+                font-size: 20px;
+                font-weight: bold;
+            }
+            .white-turn-indicator{
+                background: whitesmoke;
+                color: darkslategrey;
+            }
+            .black-turn-indicator{
+                background:darkslategrey;
+                color:whitesmoke;
+            }
+            #yourTurn{
+                font-size: 20px;
+
+                opacity:.10;
+            }
+            .square {
+            display:flex;
+            align-items: center;
+            justify-content: center;
+            height: var(--square-size);
+            width: var(--square-size);
+            padding:0;
+            float: left;
+            border: 0px;
+            z-index: 1;
+            }
+            #dark{
+                background: rgb(77, 72, 72);
+            }
+            #light{
+                background: rgb(214, 201, 201);
+            }
+            #selected{
+                background: rgb(71, 177, 39);
+            }
+            #possibleMove{
+                background:#b2b;
+            }
+            .board-row::after{ /* wtf is this doing*/
+                clear:both;
+                content:"";
+                display:table;
+            }
+        
+        .history-container{
+            display:flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: whitesmoke;
+            color: #345;
+            font-size: 18px;
+        }
+            .history-row{
+                display: flex;
+                width: 180px;
+                justify-content: space-around;
+                color:#345;
+                font-weight: bold;
+                opacity:1;
+            }
+
+            .history-entry{
+                width: 60px;
+            }
+
+    #neutralshade {
+        background-color: whitesmoke;
+    }
+    #show-promoter{
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        z-index: 50;
+        top: 12vh;
+    }
+
+
+
+
+
+
+
+
+
+
+/*                                        */
+/*                                        */    
+/*  M  E  D  I  A    Q  U  E  R  I  E  S  */
+/*                                        */
+/*                                        */
+
+/* Desktop */
+@media (min-width: 1270px){
+    body{
+        display:flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        background-image: url("../../images/backgrounds/waterbirdlong.jpg");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: 35% 0%;
+        height:100vh;
+        width:100vw;       
+        font-weight: 100;
+    }
+    
+        .title{
+            font-weight: 100;
+            font-size: 4em;/*300px;*/
+            text-align: center;
+            letter-spacing: .2em;
+        }
+
+        .game-container{ /* contains board & history */
+            display:flex;
+            flex-direction: row;
+            align-items: center;
+            height:100vh;
+        }
+
+            .board-container{
+                /*margin: 0 var(--margin-size) 0 var(--margin-size);*/
+                padding: 2vw;
+            }
+        
+            .history-container{
+                height: 64vh;/*calc(8*var(--square-size));*/
+                width: 180px;
+                padding: 2vw;
+                margin-right:2vw;
+            }
+
+
+}
+
+
+/* Tablet */
+@media ( 960px <= width < 1270px){
+    body{
+        display:flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        background-image: url("../../images/backgrounds/waterbirdmedium.jpg");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: right;
+        height:100vh;
+        width:100vw;       
+        font-weight: 100;
+    }
+        .title{
+            font-weight: 100;
+            font-size: 4em;/*300px;*/
+            text-align: center;
+            letter-spacing: .2em;
+            }
+        
+            .game-container{ /* contains board & history */
+                display:flex;
+                flex-direction: row;
+                justify-content: center;
+                align-items: center;
+                height:100vh;
+                width:84vh;
+            }
+               
+                    .player-info{
+                        width: calc(8*4vw);
+                        display:flex;
+                        flex-direction: row;
+                        justify-content: space-between;
+                    }
+                    .square {
+                        display:flex;
+                        align-items: center;
+                        justify-content: center;
+                        height: var(--square-size);
+                        width: var(--square-size);
+                        padding:0;
+                        float: left;
+                        border: 0px;
+                    }
+                        
+                        
+
+
+                .history-container{
+                    height: 64vh;/*calc(8*var(--square-size));*/
+                    width: 120px;
+                    margin-left:2vw;
+                    margin-right: 2vw;
+                }
+
+    
+
+    
+}
+
+
+/* Mobile */
+@media (max-width:959px){
+    body{
+        display:flex;
+        justify-content: space-between;
+        background-image: url("../../images/backgrounds/waterbird.jpg");
+        background-size: 100vw;
+        height:100vh;
+        width:100vw;       
+        font-weight: 100;
+    }
+    .title{
+        font-weight: 100;
+        font-size: 90px;/*300px;*/
+        text-align: center;
+        letter-spacing: 10px;
+    }
+    .game-container{ /* contains board & history */
+        display:flex;
+        justify-content: center;
+        align-items:center;
+    }
+
+        .board-container{
+            margin: 0 var(--margin-size) 0 0;
+            height:80vh;
+        }
+
+        .history-container{
+            height:calc(8*var(--square-size));
+            width: 250px;
+            margin: 0 var(--margin-size) 0 0;
+        }
+
+
+    
+}
+
+/*                                                   */
+/*                                                   */
+/*  E  N  D    M  E  D  I  A    Q  U  E  R  I  E  S  */
+/*                                                   */
+/*                                                   */
+
+
+
+
+
+
+
+
+
+
+

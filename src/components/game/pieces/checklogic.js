@@ -56,7 +56,7 @@ export function checkFilter (unfilteredMoves, selection, state, whiteIsNext){
 export function checkmateDetector(state, whiteIsNext) {
     if (checkDetector(state, whiteIsNext)){
 
-        const currentColor = whiteIsNext ? "white": "black"; //white
+        const currentColor = whiteIsNext ? "white": "black";
         const position = state.position;
 
 
