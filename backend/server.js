@@ -4,10 +4,7 @@ const path = require('path');
 const app = express();
 const port = process.env.port || 5000;
 
-//middlewares
 app.use(express.static(path.join(__dirname, "..", "build"))); //accesses react stuff
-app.use(express.static('../app/public'));
-
 
 
 const server = app.listen(port, () => {
@@ -16,3 +13,13 @@ const server = app.listen(port, () => {
 
 const io = socket(server);
 
+io.on('connection', (socket) =>{
+    socket.on('queue', () => {});
+    socket.on('submit-move', () => {});
+    socket.on('surrender', () => {});
+    socket.on('create-user', () => {});
+    socket.on('draw-request', () => {});
+    socket.on('rematch-request', () => {});
+    socket.on('close-room', () => {});
+    socket.on('disconnect', () => {});
+});

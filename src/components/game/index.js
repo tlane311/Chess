@@ -8,10 +8,11 @@ import { checkFilter, checkmateDetector } from './pieces/checklogic.js'
 import { TurnIndicator } from './turnindicator/turnindicator.js';
 import { Board } from './board/board.js';
 import { moveHelper, checkHelper, stateHelper} from './gamehelpers.js'
-import { History } from './history/history';
-import { socketFunction } from '../../api.js';
+import { History } from './history/history.js';
+import socketIsListening from '../../socketIsListening.js'
 
 export class Game extends React.Component {
+
     constructor(props) {
         super(props);
         this.state = {
@@ -21,10 +22,9 @@ export class Game extends React.Component {
             whiteIsNext: true,
             promotionStatus: false,
             promotionLocation: null,
-            input: 'empty'
         };
 
-        socketFunction( (err,input) => this.setState({input}));
+        socketIsListening()
     }
 
     
@@ -211,11 +211,6 @@ export class Game extends React.Component {
         }
     }
 
-    pingServer() {
-
-    }
-
-
     render() {
         const history = this.state.history;
         const currentConstellation = this.state.constellation;
@@ -254,7 +249,6 @@ export class Game extends React.Component {
                             colorOfIndicator="white-turn-indicator"
                         />
                     </div>
-
                 </div>
                 <History
                     completeHistory = { history }
