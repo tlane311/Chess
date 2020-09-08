@@ -1,5 +1,3 @@
-/*jslint es6 */
-
 import React from 'react';
 import './game.css';
 import { firstPosition } from './pieces/pieces.js';
@@ -9,7 +7,8 @@ import { TurnIndicator } from './turnindicator/turnindicator.js';
 import { Board } from './board/board.js';
 import { moveHelper, checkHelper, stateHelper} from './gamehelpers.js'
 import { History } from './history/history.js';
-import socketIsListening from '../../socketIsListening.js'
+import { socketIsListening, socket } from '../../socketIsListening.js'
+
 
 export class Game extends React.Component {
 
@@ -23,7 +22,6 @@ export class Game extends React.Component {
             promotionStatus: false,
             promotionLocation: null,
         };
-
         socketIsListening()
     }
 
@@ -113,8 +111,6 @@ export class Game extends React.Component {
         const whiteIsNext = this.state.whiteIsNext;
         const promotionLocation = this.state.promotionLocation;
 
-        //const freshHistory = JSON.parse(JSON.stringify(history)); //need multiple history because js keeps live references to subobjects
-
         const currentConstellation = JSON.parse(JSON.stringify(this.state.constellation)); //copy
         const currentPosition = JSON.parse(JSON.stringify(currentConstellation.position)); //copy
 
@@ -156,10 +152,8 @@ export class Game extends React.Component {
                     promotionStatus: true,
                     promotionLocation: nextSquare,
                 });
-
             }
         }
-
     }
 
 
@@ -187,9 +181,6 @@ export class Game extends React.Component {
                     await this.moveHandler(selected,square);
                     if (checkmateDetector(this.state.constellation,this.state.whiteIsNext)) {
                         alert("Mate!")}
-                    if (true) {
-                        console.log("move happened")
-                    }
                 } else { //clicking on a not possible move square
                     if (this.state.promotionStatus) {
                         this.setState({
@@ -222,6 +213,7 @@ export class Game extends React.Component {
 
         return (
             <div className="game-container">
+           
                 <div className="board-container">
                     <div className="player-info">
                         <div className= "takenPieces"> takenWhitePieces </div>

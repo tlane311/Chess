@@ -201,3 +201,5 @@ export const firstPosition = {
     takenWhitePieces: [],
     takenBlackPieces: []
 }
+const test = "string"
+export { test }
