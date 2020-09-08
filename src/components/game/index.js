@@ -8,6 +8,7 @@ import { Board } from './board/board.js';
 import { moveHelper, checkHelper, stateHelper} from './gamehelpers.js'
 import { History } from './history/history.js';
 import { socketIsListening, socket } from '../../socketIsListening.js'
+import { imgHandler } from './pieces/imgHandler.js'
 
 
 export class Game extends React.Component {
@@ -67,80 +68,67 @@ export class Game extends React.Component {
             return (square%2===0 && square%16 <=7) || (square%2!==0 && square%16 >7) ? "light" : "dark";
         }
     }
+    squareIsPromotion = (square) => square.id==="promoted";
 
-    promotionHandler(selection,nextSquare){
-        //during promotion nextSquare is actually a piece e.g. { type: "queen", color: "white", id: "promoted", img: ...}
+    moveHandler(selection,nextSquare,promotionType=null){
         const oldHistory = JSON.parse(JSON.stringify(this.state.history));
         const whiteIsNext = this.state.whiteIsNext;
         const promotionLocation = this.state.promotionLocation;
-
+    
         const currentConstellation = JSON.parse(JSON.stringify(this.state.constellation)); //copy
         const currentPosition = JSON.parse(JSON.stringify(currentConstellation.position)); //copy
-        const pawnType = currentPosition[selection].type;
-
+    
         //redundant code but should make this bit more readable
         let nextConstellation=currentConstellation;         //this is just a pointer to currentConstellation which we will mutate
         let nextPosition=currentConstellation.position;     //this is just a pointer to currentConstellation.position which we will mutate
 
-        const nextSquareIsOccupied = Boolean(currentPosition[promotionLocation].type);
+
+        const nextSquareIsOccupied = Boolean(currentPosition[nextSquare].type);
         if (nextSquareIsOccupied){
             whiteIsNext
             ? nextConstellation.takenBlackPieces.push([currentPosition[nextSquare],oldHistory.length])
             : nextConstellation.takenWhitePieces.push([currentPosition[nextSquare],oldHistory.length]);
         }
-        //moving pieces
-        nextPosition[selection] = {type: null};
-        nextPosition[promotionLocation] = nextSquare;
+    
 
-
-        checkHelper(nextConstellation, whiteIsNext)
-
-        this.setState({
-            history: oldHistory.concat([[pawnType,nextSquare.type,selection,promotionLocation]]),
-            constellation: nextConstellation,
-            selected: null,
-            whiteIsNext: !whiteIsNext,
-            promotionLocation: null,
-            promotionStatus: false
-        });
-
-    }
-
-    moveHandler(selection, nextSquare) {
-        const oldHistory = JSON.parse(JSON.stringify(this.state.history));
-        const whiteIsNext = this.state.whiteIsNext;
-        const promotionLocation = this.state.promotionLocation;
-
-        const currentConstellation = JSON.parse(JSON.stringify(this.state.constellation)); //copy
-        const currentPosition = JSON.parse(JSON.stringify(currentConstellation.position)); //copy
-
-        //redundant code but should make this bit more readable
-        let nextConstellation=currentConstellation;         //this is just a pointer to currentConstellation which we will mutate
-        let nextPosition=currentConstellation.position;     //this is just a pointer to currentConstellation.position which we will mutate
-
-        if (promotionLocation !== null){
-            this.promotionHandler(selection,nextSquare)
+    
+        nextConstellation.enPassant={};
+    
+        if (promotionType){
+            const pawnType = currentPosition[selection].type;
+            const currentColor = whiteIsNext ? 'white': 'black';
+            //moving pieces
+            nextPosition[nextSquare] = {
+                type: promotionType,
+                id: "promoted",
+                color: currentColor,
+                img: imgHandler(currentColor,promotionType) //need to fix
+            };
+            nextPosition[selection] = {type: null};
+    
+            checkHelper(nextConstellation, whiteIsNext)
+    
+            this.setState({
+                history: oldHistory.concat([[pawnType,nextSquare.type,selection,promotionLocation]]),
+                constellation: nextConstellation,
+                selected: null,
+                whiteIsNext: !whiteIsNext,
+                promotionLocation: null,
+                promotionStatus: false
+            });
         } else {
-            const nextSquareIsOccupied = Boolean(currentPosition[nextSquare].type);
-            if (nextSquareIsOccupied){
-                whiteIsNext
-                ? nextConstellation.takenBlackPieces.push([currentPosition[nextSquare],oldHistory.length])
-                : nextConstellation.takenWhitePieces.push([currentPosition[nextSquare],oldHistory.length]);
-            }
-
-            nextConstellation.enPassant={};
-
+            console.log('attempt was made')
             const promotionDetection =
             (nextPosition[selection].type==="whitePawn" && nextSquare < 8)
             || (nextPosition[selection].type==="blackPawn" && nextSquare > 55);
-
+    
             if (!promotionDetection) {
                 moveHelper[currentPosition[selection].type](selection, nextSquare, nextConstellation);
-
+    
                 checkHelper(nextConstellation, whiteIsNext);
-
+    
                 stateHelper[nextPosition[nextSquare].type](selection,nextSquare,nextConstellation);
-
+    
                 this.setState({
                     history: oldHistory.concat([[nextPosition[nextSquare].type,selection,nextSquare]]),
                     constellation: nextConstellation,
@@ -155,10 +143,8 @@ export class Game extends React.Component {
             }
         }
     }
-
-
-    squareIsPromotion = (square) => square.id==="promoted";
-
+    
+    
     async handleClick(square) {
         const currentConstellation = JSON.parse(JSON.stringify(this.state.constellation));
         const currentPosition = currentConstellation.position;
@@ -175,7 +161,7 @@ export class Game extends React.Component {
         if (selected !== null) {
             if (selected !== square){ //clicking on non-selected square
                 if (this.squareIsPromotion(square)){
-                    await this.moveHandler(selected,square);
+                    await this.moveHandler(selected,promotionLocation,square.type);
                     if (checkmateDetector(this.state.constellation,this.state.whiteIsNext)) {alert("Mate!")}
                 } else if (this.squareIsPossibleMove(square) && square !== promotionLocation) {//move will be executed
                     await this.moveHandler(selected,square);
