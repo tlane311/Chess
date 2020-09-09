@@ -44,7 +44,7 @@ export class History extends React.Component {
             secondEntry = secondEntryLetter+secondEntryBoardNumber
         }
         return (
-            <li>
+            <li key = {index}>
                 <HistoryRow
                     firstEntry = {firstEntry}
                     secondEntry = {secondEntry}
@@ -71,20 +71,3 @@ export class History extends React.Component {
     }
 
 }
-// asdkahsdjmahf everything here doesn't matter
-
-/*
-0 -> 0
-1 -> 1 firstWhite
-2 -> 1 firstBlack
-3 -> 2 secondWhite
-4 -> 2 secondBlack
-5
-6
-*/
-
-// number -> (number - number%2)/2 + 1
-// 1 -> 0 ->  (0/2) + 1 = 1
-// 2 -> 1 ->  (1 - 1)/2 + 1 = 1
-// 3 -> (2/2) + 1 = 2
-// 4 -> (3 - 1)/2 + 1 = 2

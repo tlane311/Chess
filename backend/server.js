@@ -36,11 +36,11 @@ io.on('connection', (socket) =>{
     })
     socket.on('submit-move', (moveData) => {
         const playerRoom = findPlayerRoom(socket,gameList);
-        io.to(playerRoom).emit('update-game',moveData)
+        console.log(moveData)
+        console.log(playerRoom)
+        
+        io.to(playerRoom.roomName).emit('update-game', moveData)
     });
-    socket.on('test', () => { 
-        console.log(socket.id)
-    })
     socket.on('surrender', () => {});
     socket.on('create-user', () => {});
     socket.on('draw-request', () => {});

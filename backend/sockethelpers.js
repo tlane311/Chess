@@ -23,7 +23,7 @@ export async function pairTwoPlayers(socket,playerQueue,io,gameList){
     const playerOne=playerQueue.shift();
     const playerTwo=playerQueue.shift();
     await socket.join(playerOne);
-    await io.to(playerOne).emit('game-created');
+    await io.to(playerOne).emit('game-created',playerOne)
     const individualGameData = {
         room: playerOne,
         game: JSON.parse(JSON.stringify(gameStartData)),
@@ -32,6 +32,5 @@ export async function pairTwoPlayers(socket,playerQueue,io,gameList){
     }
     gameList.push(individualGameData);
     console.log(`a new game has been created`);
-
     return null;
 }

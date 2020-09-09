@@ -29,6 +29,7 @@ export class Promoter extends React.Component {
                 shade = "neutralshade"
                 value = {obj.img}
                 onClick = { () => this.props.onClick(obj) }
+                key={obj.type}
             />
         )
     }
@@ -67,7 +68,7 @@ export class Promoter extends React.Component {
                 style={this.props.promotionColor ==="black" ? flexDirection: null}>
                 {
                 this.promotionList(this.props.promotionColor)
-                .map(piece => this.renderPromotionSquare(piece))
+                .map((piece,index) => this.renderPromotionSquare(piece))
                 }
             </div>
         )

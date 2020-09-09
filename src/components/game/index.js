@@ -23,7 +23,7 @@ export class Game extends React.Component {
             promotionStatus: false,
             promotionLocation: null,
         };
-        socketIsListening()
+        socketIsListening.bind(this)();
     }
 
     
@@ -70,7 +70,7 @@ export class Game extends React.Component {
     }
     squareIsPromotion = (square) => square.id==="promoted";
 
-    moveHandler(selection,nextSquare,promotionType=null){
+    moveHandler(selection, nextSquare, promotionType=null){
         const oldHistory = JSON.parse(JSON.stringify(this.state.history));
         const whiteIsNext = this.state.whiteIsNext;
         const promotionLocation = this.state.promotionLocation;
@@ -94,8 +94,7 @@ export class Game extends React.Component {
     
         nextConstellation.enPassant={};
     
-        if (promotionType){
-            const pawnType = currentPosition[selection].type;
+        if (this.state.promotionStatus){
             const currentColor = whiteIsNext ? 'white': 'black';
             //moving pieces
             nextPosition[nextSquare] = {
@@ -109,7 +108,7 @@ export class Game extends React.Component {
             checkHelper(nextConstellation, whiteIsNext)
     
             this.setState({
-                history: oldHistory.concat([[pawnType,nextSquare.type,selection,promotionLocation]]),
+                history: oldHistory.concat([[nextPosition[nextSquare].type,selection,promotionLocation]]),
                 constellation: nextConstellation,
                 selected: null,
                 whiteIsNext: !whiteIsNext,
@@ -117,7 +116,6 @@ export class Game extends React.Component {
                 promotionStatus: false
             });
         } else {
-            console.log('attempt was made')
             const promotionDetection =
             (nextPosition[selection].type==="whitePawn" && nextSquare < 8)
             || (nextPosition[selection].type==="blackPawn" && nextSquare > 55);
@@ -129,12 +127,13 @@ export class Game extends React.Component {
     
                 stateHelper[nextPosition[nextSquare].type](selection,nextSquare,nextConstellation);
     
-                this.setState({
+                return new Promise( (resolve) => this.setState({
                     history: oldHistory.concat([[nextPosition[nextSquare].type,selection,nextSquare]]),
                     constellation: nextConstellation,
                     selected: null,
                     whiteIsNext: !whiteIsNext
-                });
+                }, resolve)
+                );
             } else {
                 this.setState({
                     promotionStatus: true,
@@ -151,6 +150,7 @@ export class Game extends React.Component {
         const selected = this.state.selected;
         const whiteIsNext = this.state.whiteIsNext;
         const promotionLocation = this.state.promotionLocation
+
         //nothing selected, selecting piece of correct color
         if (selected===null && currentPosition[square].type !== null && (currentPosition[square].color==="white")===whiteIsNext) {
             this.setState({
@@ -165,6 +165,9 @@ export class Game extends React.Component {
                     if (checkmateDetector(this.state.constellation,this.state.whiteIsNext)) {alert("Mate!")}
                 } else if (this.squareIsPossibleMove(square) && square !== promotionLocation) {//move will be executed
                     await this.moveHandler(selected,square);
+                    const history = this.state.history;
+                    socket.emit('submit-move', history[history.length - 1]);
+                    
                     if (checkmateDetector(this.state.constellation,this.state.whiteIsNext)) {
                         alert("Mate!")}
                 } else { //clicking on a not possible move square
