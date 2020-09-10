@@ -16,6 +16,8 @@ export class Game extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            gameType: "local",
+            playerColorIsWhite: true,
             constellation: firstPosition,
             history: [],
             selected: null,
@@ -101,24 +103,27 @@ export class Game extends React.Component {
                 type: promotionType,
                 id: "promoted",
                 color: currentColor,
-                img: imgHandler(currentColor,promotionType) //need to fix
+                img: imgHandler(currentColor,promotionType)
             };
             nextPosition[selection] = {type: null};
     
-            checkHelper(nextConstellation, whiteIsNext)
+            checkHelper(nextConstellation, whiteIsNext);
     
-            this.setState({
+            return new Promise( (resolve) => this.setState({
                 history: oldHistory.concat([[nextPosition[nextSquare].type,selection,promotionLocation]]),
                 constellation: nextConstellation,
                 selected: null,
                 whiteIsNext: !whiteIsNext,
                 promotionLocation: null,
                 promotionStatus: false
-            });
+            }, resolve)
+            );
         } else {
             const promotionDetection =
-            (nextPosition[selection].type==="whitePawn" && nextSquare < 8)
-            || (nextPosition[selection].type==="blackPawn" && nextSquare > 55);
+            ((nextPosition[selection].type==="whitePawn"  && nextSquare < 8)
+            || (nextPosition[selection].type==="blackPawn" && nextSquare > 55));
+
+            const moreDetection = promotionDetection && promotionType !== null;
     
             if (!promotionDetection) {
                 moveHelper[currentPosition[selection].type](selection, nextSquare, nextConstellation);
@@ -134,11 +139,31 @@ export class Game extends React.Component {
                     whiteIsNext: !whiteIsNext
                 }, resolve)
                 );
-            } else {
+            } else if (!moreDetection) {
                 this.setState({
                     promotionStatus: true,
                     promotionLocation: nextSquare,
                 });
+            } else {
+                const currentColor = whiteIsNext ? 'white': 'black';
+                //moving pieces
+                nextPosition[nextSquare] = {
+                    type: promotionType,
+                    id: "promoted",
+                    color: currentColor,
+                    img: imgHandler(currentColor,promotionType)
+                };
+                nextPosition[selection] = {type: null};
+        
+                checkHelper(nextConstellation, whiteIsNext);
+        
+                return new Promise( (resolve) => this.setState({
+                    history: oldHistory.concat([[nextPosition[nextSquare].type,selection,nextSquare]]),
+                    constellation: nextConstellation,
+                    selected: null,
+                    whiteIsNext: !whiteIsNext,
+                }, resolve)
+                );
             }
         }
     }
@@ -150,41 +175,44 @@ export class Game extends React.Component {
         const selected = this.state.selected;
         const whiteIsNext = this.state.whiteIsNext;
         const promotionLocation = this.state.promotionLocation
-
-        //nothing selected, selecting piece of correct color
-        if (selected===null && currentPosition[square].type !== null && (currentPosition[square].color==="white")===whiteIsNext) {
-            this.setState({
-                selected: square
-            });
-        }
-        //something is selected
-        if (selected !== null) {
-            if (selected !== square){ //clicking on non-selected square
-                if (this.squareIsPromotion(square)){
-                    await this.moveHandler(selected,promotionLocation,square.type);
-                    if (checkmateDetector(this.state.constellation,this.state.whiteIsNext)) {alert("Mate!")}
-                } else if (this.squareIsPossibleMove(square) && square !== promotionLocation) {//move will be executed
-                    await this.moveHandler(selected,square);
-                    const history = this.state.history;
-                    socket.emit('submit-move', history[history.length - 1]);
+        if ((this.state.gameType === "online" && this.state.playerColorIsWhite===whiteIsNext) || this.state.gameType==="local") {
+            //nothing selected, selecting piece of correct color
+            if (selected===null && currentPosition[square].type !== null && (currentPosition[square].color==="white")===whiteIsNext) {
+                this.setState({
+                    selected: square
+                });
+            }
+            //something is selected
+            if (selected !== null) {
+                if (selected !== square){ //clicking on non-selected square
+                    if (this.squareIsPromotion(square)){
+                        await this.moveHandler(selected,promotionLocation,square.type);
+                        const history = this.state.history; //history has been updated from moveHandler
+                        if (this.state.gameType==="online") socket.emit('submit-move', history[history.length - 1]);
+                        if (checkmateDetector(this.state.constellation,this.state.whiteIsNext)) {alert("Mate!")}
                     
-                    if (checkmateDetector(this.state.constellation,this.state.whiteIsNext)) {
-                        alert("Mate!")}
-                } else { //clicking on a not possible move square
-                    if (this.state.promotionStatus) {
-                        this.setState({
-                            promotionStatus: false,
-                            promotionLocation: null,
-                        });
-                    }
-                    if (currentPosition[square].type !== null && (currentPosition[square].color==="white")===whiteIsNext) { //selecting different piece
-                        this.setState({
-                            selected: square
-                        });
-                    } else { //clicking neutral square will clear selected
-                        this.setState({
-                            selected: null
-                        });
+                    } else if (this.squareIsPossibleMove(square) && square !== promotionLocation) {//move will be executed
+                        await this.moveHandler(selected,square);
+                        const history = this.state.history; //history has been updated from moveHandler
+                        if (this.state.gameType==="online" && !this.state.promotionStatus) socket.emit('submit-move', history[history.length - 1]);
+                        if (checkmateDetector(this.state.constellation,this.state.whiteIsNext)) {
+                            alert("Mate!")}
+                    } else { //clicking on a not possible move square
+                        if (this.state.promotionStatus) {
+                            this.setState({
+                                promotionStatus: false,
+                                promotionLocation: null,
+                            });
+                        }
+                        if (currentPosition[square].type !== null && (currentPosition[square].color==="white")===whiteIsNext) { //selecting different piece
+                            this.setState({
+                                selected: square
+                            });
+                        } else { //clicking neutral square will clear selected
+                            this.setState({
+                                selected: null
+                            });
+                        }
                     }
                 }
             }

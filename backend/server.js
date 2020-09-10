@@ -39,7 +39,7 @@ io.on('connection', (socket) =>{
         console.log(moveData)
         console.log(playerRoom)
         
-        io.to(playerRoom.roomName).emit('update-game', moveData)
+        io.to(playerRoom.roomName).emit('update-game', moveData, socket.id)
     });
     socket.on('surrender', () => {});
     socket.on('create-user', () => {});
