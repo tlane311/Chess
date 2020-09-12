@@ -52,12 +52,11 @@ export class Board extends React.Component {
     
     render() {
         return (
-            <div>
+            <div className="board">
                 {[0,8,16,24,32,40,48,56]
                 .map( item => (
                     this.renderRow(item)
                 ))}
-
             </div>
         )
     }

@@ -60,7 +60,7 @@ export class History extends React.Component {
 
         return (
             <div className="history-container">
-                <h2> History </h2>
+                <h1> History </h1>
                 <ol>
                     {Array(numberOfRows).fill(null)
                     .map( (elment,index) => this.renderRow(index))

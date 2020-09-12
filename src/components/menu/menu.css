@@ -1,0 +1,40 @@
+.menu-buttons {
+    margin-top: 5vh;
+    display:flex;
+    flex-direction:column;
+    justify-content: space-around;
+    height: 25vh;
+}
+
+#menu button {
+    height: 60px;
+    width: 160px;
+    border: 3;
+    border-radius: 0.25rem;
+    border-color: var(--highlight-color);
+    font-size: 1.5rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    padding: 0.25rem 0.5rem;
+    margin: 0.25rem;
+    cursor: pointer;
+    border-radius: 5%;
+}
+
+.local-button{
+    background-color: var(--dark-color);
+    color: var(--light-color);
+    border-color: var(--highlight-color);
+}
+
+.online-button{
+    background-color: var(--background-color);
+    color: var(--light-color);
+    
+    border-color: var(--highlight-color);
+}
+
+.settings-button{
+    background-color: var(--bright-accent-color);
+    color: var(--dark-color);
+}

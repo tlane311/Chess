@@ -36,9 +36,6 @@ io.on('connection', (socket) =>{
     })
     socket.on('submit-move', (moveData) => {
         const playerRoom = findPlayerRoom(socket,gameList);
-        console.log(moveData)
-        console.log(playerRoom)
-        
         io.to(playerRoom.roomName).emit('update-game', moveData, socket.id)
     });
     socket.on('surrender', () => {});

@@ -1,5 +1,6 @@
 import React from 'react';
 import { socket } from '../../socketIsListening'
+import './menu.css';
 
 
 
@@ -36,12 +37,15 @@ export class Menu extends React.Component {
 
     render(){
         return(
-            <nav>
+            <nav className="menu-buttons">
                 <button className="local-button" onClick = { () => this.localClick() }>
-                    Play With Yourself
+                    local play
                 </button>
                 <button className="online-button" onClick = { () => this.queueClick() }>
-                    Connect with Opponent
+                    play online
+                </button>
+                <button className="settings-button" onClick = {() => {}}>
+                    settings
                 </button>
             </nav>
         )
