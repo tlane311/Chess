@@ -11,4 +11,4 @@ Game logic is stored in app/src/components/game/pieces.
 
 
 ### Backend
-A server is created using express and a tcp connection is set up between the server and the client via socket.io.
+Server is created using express. Games are played in real time using a TCP connection established by socket.io. Users can create accounts and login via an express rest api. We divide our processes into three parts: routes, controllers and services; we separate each of those into two parts for the sockets and the rest api, respectively.
