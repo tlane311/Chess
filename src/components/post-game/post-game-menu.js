@@ -19,17 +19,22 @@ export default class PostGameMenu extends React.Component{
 
     render(){
         return(
-            <>
-            <div className = "result">
-                {this.props.result}
-            </div>
+            <div className = "post-game-container">
+                <h1 className = "result">
+                    {this.props.result}
+                </h1>
 
-            <nav className = "post-game-options">
-                <button onClick = {this.handleRematch}> Rematch? </button>
-                <button onClick = {this.handleGG}> "Good Game" </button>
-                <button onClick = {this.handleAnalyze}> Analyze </button>
-            </nav>
-            </>
+                <nav className = "post-game-options">
+                    <button className="background-button" onClick = {this.handleRematch}> Rematch? </button>
+                    <button className="bright-accent-button" onClick = {this.handleGG}> "Good Game" </button>
+                    <button className="dark-button" onClick = {this.handleAnalyze}> Analyze </button>
+                    <button className="escape-button" onClick ={this.handleEscape}> 
+                        <div id="negative-slope"></div>
+                        <div id="positive-slope"></div>
+                    </button>
+                </nav>
+                
+            </div>
         )
     }
 

@@ -19,6 +19,7 @@
     margin: 0.25rem;
     cursor: pointer;
     border-radius: 5%;
+    box-shadow: 1px 3px 3px 3px rgba(0,0,0,0.3);
 }
 
 .dark-button{
@@ -29,8 +30,7 @@
 
 .background-button{
     background-color: var(--background-color);
-    color: var(--light-color);
-    
+    color: var(--light-color); 
     border-color: var(--highlight-color);
 }
 
@@ -38,6 +38,17 @@
     background-color: var(--bright-accent-color);
     color: var(--dark-color);
 }
+.bright-accent-button{
+    background-color: var(--bright-accent-color);
+    color: var(--dark-color);
+    border-color: var(--highlight-color);
+}
+.highlight-button{
+    background-color: var(--highlight-color);
+    color: var(--light-color);
+    border-color: var(--dark-color);
+}
+
 
 
 
@@ -55,9 +66,7 @@
     .in-game-buttons button {
         height: 60px;
         width: 160px;
-        border: 3;
         border-radius: 0.25rem;
-        border-color: var(--highlight-color);
         font-size: 1.5rem;
         line-height: 1.2;
         white-space: nowrap;
@@ -77,7 +86,7 @@
         overflow: hidden;
         border-radius: 15px;
     }
-        h2 {
+        .game-buttons-container h2 {
             color: var(--light-color);
             order: 1;
         }

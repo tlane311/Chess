@@ -10,7 +10,7 @@ import { History } from './history/history.js';
 import { socketIsListening, socket } from '../../socketIsListening.js';
 import { imgHandler } from './pieces/imgHandler.js';
 import PostGame from '../post-game/post-game.js'
-
+import PostGameMenu from '../post-game/post-game-menu.js'
 export class Game extends React.Component {
 
     constructor(props) {
@@ -24,7 +24,7 @@ export class Game extends React.Component {
             whiteIsNext: true,
             promotionStatus: false,
             promotionLocation: null,
-            postGame: false,
+            postGame: true,
         };
         socketIsListening.bind(this)();
     }
@@ -230,7 +230,12 @@ export class Game extends React.Component {
         const modal = this.state.postGame 
         ? (
             <PostGame>
-                <div className="modal"/>
+                <div className="modal">
+                    <PostGameMenu
+                        result ={"White Wins!"}
+
+                    />
+                </div>
             </PostGame>
         ) 
         : null ;
