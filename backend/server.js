@@ -20,4 +20,4 @@ let gameList=[];
 
 
 
-io.on('connection', sockerRoutes);
+io.on('connection', (socket) => sockerRoutes(socket,io));

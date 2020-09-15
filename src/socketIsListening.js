@@ -2,7 +2,7 @@ import io from 'socket.io-client';
 import { firstPosition } from './components/game/pieces/pieces';
 const port = 5000;
 const url = 'http://localhost:'+port;
-export const socket = io(url);
+export const socket = io(url,{autoConnect: false});
 
 export function socketIsListening() {
     socket.on('in-queue', () => {console.log('in-queue')});
@@ -41,19 +41,41 @@ export function socketIsListening() {
             await this.moveHandler(selection,nextSquare,pieceType)
         }
     });
-    socket.on('opponent-surrendered', () => {});
+    socket.on('finish-game', (gameResult) => {
+        this.setState({
+            gameResult: gameResult,
+            postGame: true,
+        })
+    });
+    socket.on('draw-requested', (playerID) => {
+
+    });
+    socket.on('draw-declined', (playerID) => {
+        
+    });
+    socket.on('rematch-requested', (playerID) => {
+
+    });
+    socket.on('rematch-declined', (playerID)=>{
+        
+    });
+    socket.on('room-closed', () => {});
     socket.on('welcome-user', () => {});
-    socket.on('draw-request', () => {});
-    socket.on('rematch-request', () => {});
-    socket.on('draw-reply', () => {});
-    socket.on('rematch-reply', () => {});
 }
 
-//update-game function
-/*
-moveData = [firstIndex,secondIndex]
+export async function menuIsListening(){
+    socket.on('game-created', (playerOne) => {
+        const playerIsLight= socket.id===playerOne;
+        this.setState({
+            inGame: true,
+            playerIsLight: playerIsLight
+        })
+    })
+}
 
-moveHandler(firstIndex, secondIndex) //promotion won't work
 
+export async function postGameIsListening(){
+    socket.on('rematch-request', ()=> {
 
-*/
+    });
+}

@@ -5,6 +5,7 @@
     --board-opacity: 1;
     --main-font-color: whitesmoke;
     --dark-color: #ed6a5a;
+    --dark-color-with-opacity: rgba(237, 106, 90,.75);
     --light-color: #e6ebe0;
     --background-color: #5ca4a9;
     --bright-accent-color: #f4f1bb;

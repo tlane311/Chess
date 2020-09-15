@@ -32,11 +32,8 @@ export async function addPlayerToQueue(playerID){
                 }
             }
         });     
-    }).then(result => console.log(`Success: ${result}`))
-    .catch( err => {
-        console.log(`Error: ${err}`);
-        return `Error: ${err}`;
-    });
+    }).then(result => `Success: ${result}`)
+    .catch( err => `Error: ${err}`);
 }
 
 export async function removePlayerFromQueue(playerID) {
@@ -58,8 +55,8 @@ export async function removePlayerFromQueue(playerID) {
                 })
                 .finally( () => client.close() );
             })
-    }).then(result => console.log(`Success: ${result}`))
-    .catch( err => console.log(`Error: ${err}`));
+    }).then(result => `Success: ${result}`)
+    .catch( err => `Error: ${err}`);
 }
 
 export async function isPlayerInQueue(playerID) {
@@ -79,8 +76,8 @@ export async function isPlayerInQueue(playerID) {
             .finally( () => client.close() );
             
         });
-    }).then(result => console.log(`Success: ${result}`))
-    .catch( err => console.log(`Error: ${err}`));
+    }).then(result => `Success: ${result}`)
+    .catch( err => `Error: ${err}`);
 }
 
 export async function findDifferentPlayer(playerID){
@@ -99,7 +96,7 @@ export async function findDifferentPlayer(playerID){
             })
             .then( (result) => {
                 if (result) resolve(result.playerID);
-                reject(null);
+                reject('Error: Unable to find match');
             })
             .catch( err => reject(err))
             .finally( () => client.close())
@@ -115,24 +112,24 @@ export async function findDifferentPlayer(playerID){
 const playerID="user1"
 const anotherID="user2";
 export async function testQueueServices() {
-    await isPlayerInQueue(playerID); // Success: false
+    await isPlayerInQueue(playerID).then( result => console.log(result),result => console.log(result)); // Success: false
     
-    await addPlayerToQueue(playerID); // Success: The player was successfully added.
-    await isPlayerInQueue(playerID); // Success: true
+    await addPlayerToQueue(playerID).then( result => console.log(result),result => console.log(result)); // Success: The player was successfully added.
+    await isPlayerInQueue(playerID).then( result => console.log(result),result => console.log(result)); // Success: true
     
-    await addPlayerToQueue(playerID); // Success: The player was already queued.
-    await isPlayerInQueue(playerID); // Success: true
+    await addPlayerToQueue(playerID).then( result => console.log(result),result => console.log(result)); // Success: The player was already queued.
+    await isPlayerInQueue(playerID).then( result => console.log(result),result => console.log(result)); // Success: true
 
-    await removePlayerFromQueue(playerID); // Success: the player was removed
-    await isPlayerInQueue(playerID); // Success: false
+    await removePlayerFromQueue(playerID).then( result => console.log(result),result => console.log(result)); // Success: the player was removed
+    await isPlayerInQueue(playerID).then( result => console.log(result),result => console.log(result)); // Success: false
 
-    await removePlayerFromQueue(playerID); // Success: No players were found
-    await isPlayerInQueue(playerID); // Success: false
+    await removePlayerFromQueue(playerID).then( result => console.log(result),result => console.log(result)); // Success: No players were found
+    await isPlayerInQueue(playerID).then( result => console.log(result),result => console.log(result)); // Success: false
 
-    await addPlayerToQueue(playerID);
-    await addPlayerToQueue(anotherID);
-    await findDifferentPlayer(playerID).then(result => console.log(result)).catch( err => console.log(err));
-    await removePlayerFromQueue(anotherID);
+    await addPlayerToQueue(playerID).then( result => console.log(result),result => console.log(result));
+    await addPlayerToQueue(anotherID).then( result => console.log(result),result => console.log(result));
+    await findDifferentPlayer(playerID).then(result => console.log(result)).catch( err => console.log(err)).then( result => console.log(result),result => console.log(result));
+    await removePlayerFromQueue(anotherID).then( result => console.log(result),result => console.log(result));
 }
 
 testQueueServices();

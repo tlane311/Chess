@@ -1,24 +1,54 @@
-import { pairTwoPlayers } from './socker-utility.js';
+import { addPlayerToQueue, removePlayerFromQueue, findDifferentPlayer} from '../../db/db-player-queue.js';
+import { addGameToList } from '../../db/db-game-list.js';
 
-import { addPlayerToQueue, removePlayerFromQueue, isPlayerInQueue, findDifferentPlayer} from '../../db/db-player-queue';
-import { addGameToList } from '../../db/db-game-list';
-export async function enterQueue(socket){
-        await addPlayerToQueue(socket.id)
-        .catch((err) => console.log(err));
-        
-        await findDifferentPlayer(socket.id)
-        .then( async anotherPlayer => await addGameToList(socket.id, anotherPlayer))
-        .catch(socket.emit('in-queue'))
+
+/*
+enterQueueService returns the playerIDs that were used to make the game (if a game was made)
+*/
+
+export async function enterQueueService(socketID){
+        return await addPlayerToQueue(socketID)
+        .then( () =>  findDifferentPlayer(socketID))
+        .then( 
+            async anotherPlayer => {
+            await addGameToList(anotherPlayer, socketID);
+            return [anotherPlayer, socketID];
+            },
+            (err) => { throw([err,socketID]) }
+        )
+        .then( async result => {
+            let firstPlayer, secondPlayer
+            [firstPlayer, secondPlayer]= [...result] 
+            await removePlayerFromQueue(firstPlayer)
+            .then( () => removePlayerFromQueue(secondPlayer) );
+            return ['Success: A game was created', firstPlayer,secondPlayer];
+        })
+        .catch(err => {
+            return err})
 }
 
-//this should be a controller
-//below are the services called
-    //talk to front-end 
-    //talk to server and get playerQueue
-    //call utility function
-
-
-export function abandonQueue(socket){
-    const playerIndex = playerQueue.indexOf(socket.id);
-    playerQueue.splice(playerIndex,1);
+export async function abandonQueueService(socketID){
+    return await removePlayerFromQueue(socketID)
+    .catch( err => err)
 }
+
+/* test
+const socketID="user123";
+const anotherID="secondUser321"
+const aThirdID="thirduser420"
+
+async function testQueueServices(){
+    await enterQueueService(socketID).then( result => console.log(result), result => console.log(result)); //Success: The player was successfully added.
+                                //[ 'Error: Unable to find match', 'user123' ]
+    await enterQueueService(anotherID).then( result => console.log(result),result => console.log(result));//Success: The player was successfully added.
+                                //Success: The game was added to the list
+                                //Success: the player was removed
+                                //Success: the player was removed
+    await enterQueueService(aThirdID).then( result => console.log(result), result => console.log(result)); //Success: The player was successfully added.
+                                //[ 'Error: Unable to find match', 'thirduser420' ]
+    await abandonQueueService(aThirdID).then( result => console.log(result),result => console.log(result)); //Success: the player was removed
+    await abandonQueueService(socketID).then( result => console.log(result),result => console.log(result)); //Success: No players were found
+}
+
+testQueueServices()
+*/

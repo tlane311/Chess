@@ -1,15 +1,15 @@
 import React from 'react';
 import './game.css';
 import { firstPosition } from './pieces/pieces.js';
-import { movesLogic } from './pieces/pieceslogic.js'
-import { checkFilter, checkmateDetector } from './pieces/checklogic.js'
+import { movesLogic } from './pieces/pieceslogic.js';
+import { checkFilter, checkmateDetector } from './pieces/checklogic.js';
 import { TurnIndicator } from './turnindicator/turnindicator.js';
 import { Board } from './board/board.js';
-import { moveHelper, checkHelper, stateHelper} from './gamehelpers.js'
+import { moveHelper, checkHelper, stateHelper} from './gamehelpers.js';
 import { History } from './history/history.js';
-import { socketIsListening, socket } from '../../socketIsListening.js'
-import { imgHandler } from './pieces/imgHandler.js'
-
+import { socketIsListening, socket } from '../../socketIsListening.js';
+import { imgHandler } from './pieces/imgHandler.js';
+import PostGame from '../post-game/post-game.js'
 
 export class Game extends React.Component {
 
@@ -24,6 +24,7 @@ export class Game extends React.Component {
             whiteIsNext: true,
             promotionStatus: false,
             promotionLocation: null,
+            postGame: false,
         };
         socketIsListening.bind(this)();
     }
@@ -91,9 +92,7 @@ export class Game extends React.Component {
             ? nextConstellation.takenBlackPieces.push([currentPosition[nextSquare],oldHistory.length])
             : nextConstellation.takenWhitePieces.push([currentPosition[nextSquare],oldHistory.length]);
         }
-    
 
-    
         nextConstellation.enPassant={};
     
         if (this.state.promotionStatus){
@@ -228,9 +227,17 @@ export class Game extends React.Component {
         //const checkmate = checkmateDetector(current,whiteIsNext); //need to work this in somehow
         //need to add draw
 
+        const modal = this.state.postGame 
+        ? (
+            <PostGame>
+                <div className="modal"/>
+            </PostGame>
+        ) 
+        : null ;
+
         return (
             <div className="game-container">
-           
+                {modal}
                 <div className="board-container">
                     <div className="player-info">
                         <div className= "takenPieces"> takenWhitePieces </div>

@@ -47,8 +47,8 @@ export async function createUser(username, email, hashedPassword){
                 }
             }
         });   
-    }).then(result => console.log(`Success: ${result}`))
-    .catch( err => console.log(`Error: ${err}`));
+    }).then(result => `Success: ${result}`)
+    .catch( err => `Error: ${err}`);
 }
 
 
@@ -73,9 +73,8 @@ export async function deleteUser(username,email,hashedPassword){
             })
             .finally( () => client.close() );
         })
-    }).then(result => console.log(`Success: ${result}`))
-    .catch( err => console.log(`Error: ${err}`));
-}
+    }).then(result => `Success: ${result}`)
+    .catch( err => `Error: ${err}`);
 
 
 export async function doesUserExist(username,email){
@@ -94,8 +93,8 @@ export async function doesUserExist(username,email){
             })
             .finally( () => client.close());
         });
-    }).then(result => console.log(`Success: ${result}`))
-        .catch( err => console.log(`Error: ${err}`));
+    }).then(result => `Success: ${result}`)
+    .catch( err => `Error: ${err}`);
 }
 
 export async function updateUser(username,email, hashedPassword, updatedKey, updatedValue){
@@ -149,8 +148,8 @@ export async function updateUser(username,email, hashedPassword, updatedKey, upd
                 }   
             }
         })
-    }).then(result => console.log(`Success: ${result}`))
-    .catch( err => console.log(`Error: ${err}`));
+    }).then(result => `Success: ${result}`)
+    .catch( err => `Error: ${err}`);
 }
 
 /* unit test -- probably need to test update a bit more
