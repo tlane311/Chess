@@ -48,8 +48,8 @@ export function undoLastMove(historySelector,history,constellation){
     //handle promotion
     if (previousPosition[endingSquare].id==="promoted") {
         const promotedPawn = whiteIsNext
-            ? previousConstellation.takenBlackPieces.find(piece => piece[1]===historySelector -1)[0] //.find() guaranteed to return something since something was promoted
-            : previousConstellation.takenWhitePieces.find(piece => piece[1]===historySelector -1)[0];
+            ? previousConstellation.takenBlackPieces.pop()[0] //.find() guaranteed to return something since something was promoted
+            : previousConstellation.takenWhitePieces.pop()[0];
         
         previousPosition[startingSquare]=promotedPawn;//undoes the prior move
         
@@ -132,19 +132,4 @@ export function undoLastMove(historySelector,history,constellation){
         : {type:null};
 
     return previousConstellation;
-}
-
-export function redoNextMove(historySelector,history,constellation){
-    const nextConstellation = JSON.parse(JSON.stringify(constellation)); //makes a copy
-    const nextPosition = nextConstellation.position;
-    const nextMove = history[historySelector + 1]; //this function won't run if historySelector >=history.length - 1  
-    const whiteIsNext = historySelector % 2 === 0;
-
-    const takenPieces = whiteIsNext
-        ? nextConstellation.takenWhitePieces
-        : nextConstellation.takenBlackPieces;
-    if (nextPosition[nextMove[2]].type) takenPieces.push(nextPosition[nextMove[2]]);
-    nextPosition[nextMove[2]]=nextMove[0];
-    nextPosition[nextMove[1]]={type:null};
-    return nextConstellation
 }

@@ -7,7 +7,7 @@ import { TurnIndicator } from './turnindicator/turnindicator.js';
 import { Board } from './board/board.js';
 import { moveHelper, checkHelper, stateHelper} from './gamehelpers.js';
 import { History } from './history/history.js';
-import { Undo, Redo, undoLastMove, redoNextMove } from './history/navigation/undo.js'
+import { Undo, Redo, undoLastMove } from './history/navigation/undo.js'
 import { socketIsListening, socket } from '../../socketIsListening.js';
 import { imgHandler } from './pieces/imgHandler.js';
 import PostGame from '../post-game/post-game.js'
@@ -158,8 +158,9 @@ export class Game extends React.Component {
       
         if (!this.state.promotionStatus && aboutToPromote){ //condition 2
             this.setState({
-            promotionStatus: true,
-            promotionLocation: nextSquare,
+                promotionStatus: true,
+                promotionLocation: nextSquare,
+                selected: selection //this needs to be forced here for redo feature
             });
         }
       
@@ -184,7 +185,7 @@ export class Game extends React.Component {
         
             let newHistory;
             if (historySelector < oldHistory.length) {
-                if (oldHistory[historySelector][1]===selection && oldHistory[historySelector][2]===nextSquare){    
+                if (oldHistory[historySelector][1]===selection && oldHistory[historySelector][2]===nextSquare && oldHistory[historySelector][0]===nextPosition[nextSquare].type){    
                     newHistory = oldHistory
                 } else {
                     newHistory = oldHistory.slice(0,historySelector).concat([[nextPosition[nextSquare].type,selection,promotionLocation,nextConstellation.castleStatus]])
@@ -301,22 +302,21 @@ export class Game extends React.Component {
                 constellation: undoLastMove(historySelector, history, constellation),
                 historySelector: historySelector-1,
                 whiteIsNext: !whiteIsNext,
+                promotionStatus:false,
+                promotionLocation: null,
+                selected: null
             });
         }
     }
 
     handleRedo(){
-        const constellation = JSON.parse(JSON.stringify(this.state.constellation));
         const history = JSON.parse(JSON.stringify(this.state.history));
         const historySelector = this.state.historySelector;
-        const nextSelector = historySelector+1;
-        const whiteIsNext = this.state.whiteIsNext;
-        if (historySelector < history.length-1){
-            this.setState({
-                constellation: redoNextMove(history,history,constellation),
-                historySelector: historySelector+1,
-                whiteIsNext: !whiteIsNext
-            })
+        const nextMove = historySelector < history.length
+            ? history[historySelector] 
+            : null;
+        if (nextMove){
+            this.moveHandler(nextMove[1],nextMove[2], nextMove[0])
         }
     }
 
