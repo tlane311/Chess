@@ -92,8 +92,8 @@ export class Game extends React.Component {
         const nextSquareIsOccupied = Boolean(currentPosition[nextSquare].type);
         if (nextSquareIsOccupied){
             whiteIsNext
-            ? nextConstellation.takenBlackPieces.push([currentPosition[nextSquare],oldHistory.length])
-            : nextConstellation.takenWhitePieces.push([currentPosition[nextSquare],oldHistory.length]);
+                ? nextConstellation.takenBlackPieces.push([currentPosition[nextSquare],historySelector])
+                : nextConstellation.takenWhitePieces.push([currentPosition[nextSquare],historySelector]);
         }
         //resetting enPassant
         nextConstellation.enPassant={};
@@ -111,6 +111,17 @@ export class Game extends React.Component {
         || (nextPosition[selection].type==="blackPawn" && nextSquare > 55));
       
         if (!this.state.promotionStatus && !aboutToPromote){ //condition 1
+            //if enPassant, then we will add taken pawn to the takenPieces
+            const attemptingEnPassant = (currentPosition[selection].type === "whitePawn" || currentPosition[selection].type === "blackPawn")
+                && ((selection - 9 ===  nextSquare || selection - 7 === nextSquare)||(selection + 9 ===  nextSquare || selection + 7 === nextSquare) )
+                && !nextConstellation.position[nextSquare].type;
+            
+            if (attemptingEnPassant){
+                whiteIsNext
+                    ? nextConstellation.takenBlackPieces.push([currentPosition[nextSquare+8],historySelector])
+                    : nextConstellation.takenWhitePieces.push([currentPosition[nextSquare-8],historySelector]);
+            }
+            
             moveHelper[currentPosition[selection].type](selection, nextSquare, nextConstellation);
         
             checkHelper(nextConstellation, whiteIsNext);
@@ -129,10 +140,10 @@ export class Game extends React.Component {
                 if (oldHistory[historySelector][1]===selection && oldHistory[historySelector][2]===nextSquare){                    
                     newHistory = oldHistory
                 } else {
-                    newHistory = oldHistory.slice(0,historySelector).concat([[nextPosition[nextSquare].type,selection,nextSquare]])
+                    newHistory = oldHistory.slice(0,historySelector).concat([[nextPosition[nextSquare].type,selection,nextSquare,nextConstellation.castleStatus]])
                 }
             } else {
-                newHistory = oldHistory.concat([[nextPosition[nextSquare].type,selection,nextSquare]])
+                newHistory = oldHistory.concat([[nextPosition[nextSquare].type,selection,nextSquare, nextConstellation.castleStatus]])
             }
         
             return new Promise( (resolve) => this.setState({
@@ -154,6 +165,12 @@ export class Game extends React.Component {
       
         if (this.state.promotionStatus){ //condition 3
             const currentColor = whiteIsNext ? 'white': 'black';
+            //adding pawn to taken Pieces
+            whiteIsNext
+                ? nextConstellation.takenWhitePieces.push([currentPosition[selection],historySelector])
+                : nextConstellation.takenBlackPieces.push([currentPosition[selection],historySelector]);
+
+            
             //moving pieces
             nextPosition[nextSquare] = {
                 type: promotionType,
@@ -170,10 +187,10 @@ export class Game extends React.Component {
                 if (oldHistory[historySelector][1]===selection && oldHistory[historySelector][2]===nextSquare){    
                     newHistory = oldHistory
                 } else {
-                    newHistory = oldHistory.slice(0,historySelector).concat([[nextPosition[nextSquare].type,selection,promotionLocation]])
+                    newHistory = oldHistory.slice(0,historySelector).concat([[nextPosition[nextSquare].type,selection,promotionLocation,nextConstellation.castleStatus]])
                 }
             } else {
-                newHistory = oldHistory.concat([[nextPosition[nextSquare].type,selection,promotionLocation]])
+                newHistory = oldHistory.concat([[nextPosition[nextSquare].type,selection,promotionLocation,nextConstellation.castleStatus]])
             }
         
             return new Promise( (resolve) => this.setState({

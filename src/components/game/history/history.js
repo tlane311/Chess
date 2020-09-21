@@ -1,6 +1,6 @@
 import React from 'react';
 
-function squareToLetterNumber(square){
+export function squareToLetterNumber(square){
     return String.fromCharCode(97+square%8) + JSON.stringify(8 - (square - square%8)/8);
 }
 

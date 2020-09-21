@@ -69,7 +69,7 @@ export const moveHelper = {
     },
     blackPawn: function (selection, nextSquare, nextState) {
         //remove enPassant pawn first
-        if (selection + 9 ===  nextSquare || selection + 7 === nextSquare) {
+        if ((selection + 9 ===  nextSquare || selection + 7 === nextSquare) && !nextState.position[nextSquare].type) {
             nextState.position[nextSquare - 8] = {type: null};
         }
 
