@@ -203,3 +203,15 @@ export const firstPosition = {
 }
 const test = "string"
 export { test }
+
+export function piecesCompareFunction(firstPieceType,secondPieceType){
+    if (firstPieceType===secondPieceType) return 0;
+    if (firstPieceType==="queen") return 1;
+    if (firstPieceType==="whitePawn"||firstPieceType==="blackPawn") return -1;
+    if (firstPieceType==="rook" && (secondPieceType==="bishop"||secondPieceType==="knight")) return 1;
+    if (firstPieceType==="bishop" && secondPieceType==="knight") return 1;
+    if (firstPieceType==="knight" && (secondPieceType==="bishop" || secondPieceType==="rook")) return -1;
+    if (firstPieceType==="bishop"&&secondPieceType==="rook") return -1;
+    if (secondPieceType==="queen") return -1;
+    if (secondPieceType==="whitePawn"||secondPieceType==="blackPawn") return 1;
+}

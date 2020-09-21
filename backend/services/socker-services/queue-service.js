@@ -12,7 +12,7 @@ export async function enterQueueService(socketID){
         .then( 
             async anotherPlayer => {
             await addGameToList(anotherPlayer, socketID);
-            return [anotherPlayer, socketID];
+            return [anotherPlayer, socketID]; //change this to resolve
             },
             (err) => { throw([err,socketID]) }
         )

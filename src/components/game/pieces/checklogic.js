@@ -75,6 +75,31 @@ export function checkmateDetector(state, whiteIsNext) {
     }
 }
 
+export function drawDetector(state, whiteIsNext) {
+    const currentColor = whiteIsNext ? "white": "black";
+    const position = state.position;
+
+    const remainingPieces = position.filter( square => square.type !==null)
+    if (remainingPieces.length <= 2) return true;
+    if (remainingPieces.length <=3){
+        return !remainingPieces.some(square=> square.type===("rook"||"queen"||"whitePawn"||"blackPawn"));
+    }
+
+
+    if (!checkDetector(state, whiteIsNext)){            
+        return !position.some(
+            (square,index) => {
+                if (square.type && square.color === currentColor){
+                    let unfilteredMoves = movesLogic[square.type](index,state);
+                    return checkFilter(unfilteredMoves,index,state, whiteIsNext).length;
+                } else {
+                    return false;
+                }
+            }
+        ) // returns true if there is some square with filtered length > 0 else returns false
+    } else return false;
+}
+
 /*
 
 

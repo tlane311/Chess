@@ -3,8 +3,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { Game } from './components/game/index.js';
-import { Menu } from './components/menu/index.js';
+import { Game } from './components/game/game.js';
+import { Menu } from './components/menu/menu.js';
 import { Login } from './components/login/login.js'
 
 ReactDOM.render(

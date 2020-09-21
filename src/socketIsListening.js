@@ -7,10 +7,12 @@ export const socket = io(url,{autoConnect: false});
 export function socketIsListening() {
     socket.on('in-queue', () => {console.log('in-queue')});
     socket.on('game-created', (gameID) => {
+        socket.emit('room-change-request')
         if (socket.id===gameID){
             console.log('white-player')
             this.setState({
                 gameType: "online",
+                playerColorIsWhite: true,
                 constellation: firstPosition,
                 history: [],
                 selected: null,
@@ -42,40 +44,105 @@ export function socketIsListening() {
         }
     });
     socket.on('finish-game', (gameResult) => {
+        const prettyResult = gameResult.split("-")
+        .map( substring => substring[0].toUpperCase() + substring.slice(1))
+        .join(" ") 
+        + "!";
         this.setState({
-            gameResult: gameResult,
+            gameResult: prettyResult,
             postGame: true,
         })
     });
-    socket.on('draw-requested', (playerID) => {
 
+    socket.on('client-rematch-accepted', (roomName) => {
+        this.setState({
+            postGame: false
+        })
+        console.log('accepted-rematch');
     });
-    socket.on('draw-declined', (playerID) => {
-        
+    socket.on('client-rematch-declined', ()=>{
+        this.setState({
+            gameType: "local"
+        })
+        console.log('declined-rematch')
     });
-    socket.on('rematch-requested', (playerID) => {
-
+    socket.on('room-closed', ()=>{
+        this.setState({
+            otherPlayerHasLeft: true,
+        })
     });
-    socket.on('rematch-declined', (playerID)=>{
-        
-    });
-    socket.on('room-closed', () => {});
     socket.on('welcome-user', () => {});
 }
 
 export async function menuIsListening(){
     socket.on('game-created', (playerOne) => {
-        const playerIsLight= socket.id===playerOne;
+        const playerIsLight = socket.id===playerOne;
         this.setState({
             inGame: true,
             playerIsLight: playerIsLight
+        })
+    });
+    socket.on('finish-game', (gameResult) => {
+        this.setState({
+            inGame: false,
+            playerIsLight: null
+        })
+    });
+    
+    socket.on('draw-requested', (requesterID) => {
+        if (requesterID !==socket.id){
+            this.setState({
+                drawRequested: true,
+                inGameShown: true
+            })
+        }
+    } )
+
+    socket.on('draw-declined', (decliningID) => {
+        if (decliningID !== socket.id){
+            this.setState({
+                sentDrawRequest: false,
+                drawDeclined: true
+            })
+        } else {
+            this.setState({
+                sentDrawRequest: false,
+                drawDeclined: true
+            })
+        }
+    })
+
+    socket.on('update-game', () => {
+        this.setState({
+            drawRequested: false,
+            drawRequestSent: false,
+            drawDeclined: false,
         })
     })
 }
 
 
 export async function postGameIsListening(){
-    socket.on('rematch-request', ()=> {
-
+    socket.on('rematch-requested', (playerID) => {
+        if (socket.id!==playerID){
+            this.setState({
+                rematchRequested: true,
+            })
+        } else {
+            this.setState({
+                requestSent: true,
+            })
+        }
+    });
+    socket.on('client-rematch-declined', ()=>{
+        this.setState({
+            rematchDeclined: true,
+            rematchRequested: false,
+        })
+    });
+    socket.on('room-closed', ()=>{
+        this.setState({
+            otherPlayerHasLeft: true,
+        })
     });
 }

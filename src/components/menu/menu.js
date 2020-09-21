@@ -12,9 +12,14 @@ export class Menu extends React.Component {
         this.state = {
             inQueue: false,
             localGame: false,
-            inGame: false,
+            inGame: false, //decides when menu switches to in-game menu
             inGameShown: false,
-            playerIsLight: null
+            playerIsLight: null, 
+            //player color is stored in state since we might need to pass it to server if the player surrenders or asks for draws
+            //note, the menu does not talk directly to game
+            drawRequested: false,
+            drawRequestSent: false,
+            drawDeclined: false,
         }
         menuIsListening.bind(this)();
     }
@@ -32,7 +37,9 @@ export class Menu extends React.Component {
     }
 
     localClick(){     
-        socket.emit('abandon-queue').close();
+        if (this.state.inQueue) {
+            socket.emit('abandon-queue').close();
+            }
         this.setState({
             localGame: true,
             inQueue: false
@@ -51,12 +58,39 @@ export class Menu extends React.Component {
         const color = playerIsLight ? "white" : "black";
         socket.emit('surrender', color)
     }
+    handleDrawRequest(){
+        if (this.state.drawDeclined) return null;
+        const playerIsLight = this.state.playerIsLight;
+        const color = playerIsLight ? "white" : "black";
+        socket.emit('draw-request', color);
+        this.setState({
+            drawRequestSent: true
+        })
+    }
+    handleDrawReply(bool){
+        const playerIsLight = this.state.playerIsLight;
+        const color = playerIsLight ? "white" : "black";
+        return (
+            () => bool ? (
+                socket.emit('draw', color))
+            : (
+                socket.emit('draw-declined'),
+                this.setState({
+                    drawRequested: false
+                })
+            )
+        );
+    }
 
     render(){
         const inGame = this.state.inGame;
         const inGameShown = this.state.inGameShown;
         const showGameButtons = inGameShown ? " " : " hide-display";
         const displayPlus = !inGameShown ? " " : " hide-display";
+        const drawRequested = this.state.drawRequested;
+        const sentDrawRequest = this.state.drawRequestSent ? "Requested": "Draw?"
+        const drawDeclined = this.state.drawDeclined ? "Declined" : sentDrawRequest;
+        //need some logic to shape menu when draw requested
         
         if (!inGame) {
             return(
@@ -72,7 +106,7 @@ export class Menu extends React.Component {
                     </button>
                 </nav>
             )
-        } else {
+        } else if (!drawRequested) {
             return(
                 <nav className="in-game-buttons">
                     <div className="game-buttons-container">
@@ -83,8 +117,35 @@ export class Menu extends React.Component {
                             <button className="dark-button" onClick = {() => this.surrenderClick()}>
                                 surrender
                             </button>
-                            <button className="background-button" onClick = {() => {}}>
-                                draw?
+                            <button className="background-button" onClick = {() => this.handleDrawRequest()}>
+                                {drawDeclined}
+                            </button>
+                        </div>
+
+                        <div className="expand-collapse-button" onClick={ () => this.expandClick() }>
+                            <div id="vertical-div" className={displayPlus}></div>
+                            <div id="horizontal-div"></div>
+                        </div>
+                    </div>
+                    
+                    <button className="settings-button" onClick = {() => {}}>
+                        settings
+                    </button>
+                </nav>
+            )
+        } else {
+            return(
+                <nav className="in-game-buttons">
+                    <div className="game-buttons-container">
+                        <h2>Draw Request From:</h2>
+                        <h2> Guest </h2>
+                        
+                        <div className={"game-buttons" + showGameButtons}>
+                            <button className="dark-button" onClick = {this.handleDrawReply(true)}>
+                                accept
+                            </button>
+                            <button className="background-button" onClick = {this.handleDrawReply(false)}>
+                                decline
                             </button>
                         </div>
 

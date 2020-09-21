@@ -1,0 +1,9 @@
+.taken-pieces{
+    display:flex;
+    list-style-type: none;
+    justify-content: flex-start;
+    align-items:center;
+}
+.taken-pieces li {
+    width: 3vh;
+}

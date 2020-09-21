@@ -88,3 +88,12 @@
     #positive-slope{
         transform: rotate(45deg);
     }
+
+.rematch-response button{
+    width: 120px;
+    font-size:25px;
+}
+.rematch-response{
+    display:flex;
+    justify-content:space-between;
+}

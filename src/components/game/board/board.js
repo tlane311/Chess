@@ -2,9 +2,12 @@ import React from 'react';
 import { Promoter } from '../promoter/promoter.js'
 
 export function Square(props) {
+    const displayPiece = props.value 
+        ? (<img src={props.value} alt=""/>)
+        : null;
     return (
-        <div className={"square"+" "} id={props.shade} onClick={props.onClick}>
-            <img src={props.value} alt=""/>
+        <div className={"square"+" "} id={props.shade} onClick={props.onClick} key={`square-${props.uniqueKey}`}>
+            {displayPiece}
             {props.promoter}
         </div>
     );
@@ -31,9 +34,10 @@ export class Board extends React.Component {
                 <Square
                     shade={this.props.shade(number)}
                     value={ this.containsPromoter(number, this.props.promotionLocation) 
-                    ? "" : this.props.position[number].img }
+                    ? "" : this.props.position[number].img}
                     onClick={ () => this.props.onClick(number) }
                     promoter= {this.containsPromoter(number,this.props.promotionLocation)}
+                    uniqueKey={number}
                 />
             </div>
         );
@@ -41,7 +45,7 @@ export class Board extends React.Component {
 
     renderRow(number){
         return (
-            <div className="board-row">
+            <div className={"board-row "+this.props.playerColor} key={`row-${number}`}>
                 {[0,1,2,3,4,5,6,7]
                 .map( item => (
                     this.renderSquare(item+number)
@@ -52,7 +56,7 @@ export class Board extends React.Component {
     
     render() {
         return (
-            <div className="board">
+            <div className={"board "+this.props.playerColor} key={'board'}>
                 {[0,8,16,24,32,40,48,56]
                 .map( item => (
                     this.renderRow(item)

@@ -13,7 +13,8 @@
     }
         .board{
             display:flex;
-            flex-direction:column-reverse;
+            flex-direction:column;
+            /* FLIP HERE */
             justify-content: center;
             width: calc(8*var(--square-size));
             height: calc(8*var(--square-size));
@@ -22,6 +23,9 @@
             overflow:hidden;
             border-radius:5px;
             box-shadow: 5px 5px 10px 10px rgba(0,0,0,0.5);
+        }
+        .dark-player {
+            flex-direction: column-reverse;
         }
 
         /* Board CSS*/
@@ -44,7 +48,7 @@
             background: var(--dark-color);
             color: var(--light-color);
         }
-        #yourTurn{ /* this should be renamed to not-your-turn*/
+        #yourTurn{ /*this should be renamed to not-your-turn*/
             font-size: 30px;
             opacity:.1;
         }
@@ -59,6 +63,10 @@
             border: 0px;
             z-index: 1;
         }
+        .square img{
+            height:8vh;
+            width:8vh;
+        }
         #dark{
             background: var(--dark-color);
         }
@@ -68,11 +76,18 @@
         #selected{
             background: var(--bright-accent-color);
         }
-        #possibleMove{
-            background: var(--highlight-color);
+        #possible-move-dark{
+            background-image: radial-gradient(var(--background-color) 0%, var(--background-color) 15%, var(--dark-color)16%);
+        }
+        #possible-move-light{
+            background-image: radial-gradient(var(--background-color) 0%, var(--background-color) 15%, var(--light-color)16%);
         }
         .board-row{
             display:flex;
+
+            /*FLIP HERE*/
+        }
+        .dark-player .board-row{
             flex-direction: row-reverse;
         }
         .board-row::after{ /* wtf is this doing*/
@@ -139,14 +154,15 @@
         }
 
 #neutralshade {
-    background-color: whitesmoke;
+    background-color:var(--highlight-color);
+    border: solid 1px black;
 }
 #show-promoter{
     position: relative;
     display: flex;
     flex-direction: column;
     z-index: 50;
-    top: 12vh;
+    top: 16.5vh;
 }
 
 

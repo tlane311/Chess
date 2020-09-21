@@ -1,16 +1,18 @@
 import React from 'react';
 import './game.css';
-import { firstPosition } from './pieces/pieces.js';
+import { firstPosition, piecesCompareFunction } from './pieces/pieces.js';
 import { movesLogic } from './pieces/pieceslogic.js';
-import { checkFilter, checkmateDetector } from './pieces/checklogic.js';
+import { checkFilter, checkmateDetector, drawDetector } from './pieces/checklogic.js';
 import { TurnIndicator } from './turnindicator/turnindicator.js';
 import { Board } from './board/board.js';
 import { moveHelper, checkHelper, stateHelper} from './gamehelpers.js';
 import { History } from './history/history.js';
+import { Undo, Redo, undoLastMove, redoNextMove } from './history/navigation/undo.js'
 import { socketIsListening, socket } from '../../socketIsListening.js';
 import { imgHandler } from './pieces/imgHandler.js';
 import PostGame from '../post-game/post-game.js'
 import PostGameMenu from '../post-game/post-game-menu.js'
+import TakenPieces from './taken-pieces/taken-pieces.js'
 export class Game extends React.Component {
 
     constructor(props) {
@@ -20,16 +22,17 @@ export class Game extends React.Component {
             playerColorIsWhite: true,
             constellation: firstPosition,
             history: [],
+            historySelector: 0,
             selected: null,
             whiteIsNext: true,
             promotionStatus: false,
             promotionLocation: null,
-            postGame: true,
+            postGame: false,
+            otherPlayerHasLeft: false,
+            gameResult: null,
         };
         socketIsListening.bind(this)();
     }
-
-    
 
     possibleMoves(selected){ //returns array of moves
         const constellation = this.state.constellation;
@@ -65,7 +68,7 @@ export class Game extends React.Component {
             //if square is selected and square is not empty
             return "selected"
         } else if (squareIsPossibleMove) {
-            return "possibleMove"
+            return "possible-move-" + ((square%2===0 && square%16 <=7) || (square%2!==0 && square%16 >7) ? "light" : "dark");
         } else {
             //standard shading for chess board describing using modulo conditionals
             return (square%2===0 && square%16 <=7) || (square%2!==0 && square%16 >7) ? "light" : "dark";
@@ -75,27 +78,81 @@ export class Game extends React.Component {
 
     moveHandler(selection, nextSquare, promotionType=null){
         const oldHistory = JSON.parse(JSON.stringify(this.state.history));
+        const historySelector = this.state.historySelector;
         const whiteIsNext = this.state.whiteIsNext;
         const promotionLocation = this.state.promotionLocation;
-    
+      
         const currentConstellation = JSON.parse(JSON.stringify(this.state.constellation)); //copy
         const currentPosition = JSON.parse(JSON.stringify(currentConstellation.position)); //copy
-    
-        //redundant code but should make this bit more readable
-        let nextConstellation=currentConstellation;         //this is just a pointer to currentConstellation which we will mutate
-        let nextPosition=currentConstellation.position;     //this is just a pointer to currentConstellation.position which we will mutate
-
-
+      
+        let nextConstellation=currentConstellation; //this is just a pointer to currentConstellation which we will mutate
+        let nextPosition=currentConstellation.position; 
+      
+        //adding pieces that are taken by this move to the constellation
         const nextSquareIsOccupied = Boolean(currentPosition[nextSquare].type);
         if (nextSquareIsOccupied){
             whiteIsNext
             ? nextConstellation.takenBlackPieces.push([currentPosition[nextSquare],oldHistory.length])
             : nextConstellation.takenWhitePieces.push([currentPosition[nextSquare],oldHistory.length]);
         }
-
+        //resetting enPassant
         nextConstellation.enPassant={};
-    
-        if (this.state.promotionStatus){
+      
+        //we break move handling into 3 cases:
+        //condition 1: regular move (including en passant and castling) not promoting
+        //condition 2: if a pawn is attempting to promote, change constellation so that promotionHelper displays
+        //condition 3: handles turning a pawn into its promotion
+        //note about the logic: A || (!A && !B) || (!A && B) === A || !A === true
+        //note, we modify the history in a weird way so that the redo button can use moveHandler without messing up the history
+          //the alternative is that the redo button creates its own move handling which seems wet
+      
+        const aboutToPromote = //detecting if we are attempting to move a pawn to promote
+        ((nextPosition[selection].type==="whitePawn"  && nextSquare < 8)
+        || (nextPosition[selection].type==="blackPawn" && nextSquare > 55));
+      
+        if (!this.state.promotionStatus && !aboutToPromote){ //condition 1
+            moveHelper[currentPosition[selection].type](selection, nextSquare, nextConstellation);
+        
+            checkHelper(nextConstellation, whiteIsNext);
+        
+            stateHelper[nextPosition[nextSquare].type](selection,nextSquare,nextConstellation);
+            
+            /* 
+            example:
+            history length is 2
+
+            historySelector is 0
+            */
+           
+            let newHistory;
+            if (historySelector < oldHistory.length) {
+                if (oldHistory[historySelector][1]===selection && oldHistory[historySelector][2]===nextSquare){                    
+                    newHistory = oldHistory
+                } else {
+                    newHistory = oldHistory.slice(0,historySelector).concat([[nextPosition[nextSquare].type,selection,nextSquare]])
+                }
+            } else {
+                newHistory = oldHistory.concat([[nextPosition[nextSquare].type,selection,nextSquare]])
+            }
+        
+            return new Promise( (resolve) => this.setState({
+                history: newHistory,
+                historySelector: historySelector+1,
+                constellation: nextConstellation,
+                selected: null,
+                whiteIsNext: !whiteIsNext
+            }, resolve)
+            );
+        }
+      
+        if (!this.state.promotionStatus && aboutToPromote){ //condition 2
+            this.setState({
+            promotionStatus: true,
+            promotionLocation: nextSquare,
+            });
+        }
+      
+        if (this.state.promotionStatus){ //condition 3
             const currentColor = whiteIsNext ? 'white': 'black';
             //moving pieces
             nextPosition[nextSquare] = {
@@ -105,11 +162,23 @@ export class Game extends React.Component {
                 img: imgHandler(currentColor,promotionType)
             };
             nextPosition[selection] = {type: null};
-    
+        
             checkHelper(nextConstellation, whiteIsNext);
-    
+        
+            let newHistory;
+            if (historySelector < oldHistory.length) {
+                if (oldHistory[historySelector][1]===selection && oldHistory[historySelector][2]===nextSquare){    
+                    newHistory = oldHistory
+                } else {
+                    newHistory = oldHistory.slice(0,historySelector).concat([[nextPosition[nextSquare].type,selection,promotionLocation]])
+                }
+            } else {
+                newHistory = oldHistory.concat([[nextPosition[nextSquare].type,selection,promotionLocation]])
+            }
+        
             return new Promise( (resolve) => this.setState({
-                history: oldHistory.concat([[nextPosition[nextSquare].type,selection,promotionLocation]]),
+                history: newHistory,
+                historySelector: historySelector+1,
                 constellation: nextConstellation,
                 selected: null,
                 whiteIsNext: !whiteIsNext,
@@ -117,57 +186,9 @@ export class Game extends React.Component {
                 promotionStatus: false
             }, resolve)
             );
-        } else {
-            const promotionDetection =
-            ((nextPosition[selection].type==="whitePawn"  && nextSquare < 8)
-            || (nextPosition[selection].type==="blackPawn" && nextSquare > 55));
-
-            const moreDetection = promotionDetection && promotionType !== null;
-    
-            if (!promotionDetection) {
-                moveHelper[currentPosition[selection].type](selection, nextSquare, nextConstellation);
-    
-                checkHelper(nextConstellation, whiteIsNext);
-    
-                stateHelper[nextPosition[nextSquare].type](selection,nextSquare,nextConstellation);
-    
-                return new Promise( (resolve) => this.setState({
-                    history: oldHistory.concat([[nextPosition[nextSquare].type,selection,nextSquare]]),
-                    constellation: nextConstellation,
-                    selected: null,
-                    whiteIsNext: !whiteIsNext
-                }, resolve)
-                );
-            } else if (!moreDetection) {
-                this.setState({
-                    promotionStatus: true,
-                    promotionLocation: nextSquare,
-                });
-            } else {
-                const currentColor = whiteIsNext ? 'white': 'black';
-                //moving pieces
-                nextPosition[nextSquare] = {
-                    type: promotionType,
-                    id: "promoted",
-                    color: currentColor,
-                    img: imgHandler(currentColor,promotionType)
-                };
-                nextPosition[selection] = {type: null};
-        
-                checkHelper(nextConstellation, whiteIsNext);
-        
-                return new Promise( (resolve) => this.setState({
-                    history: oldHistory.concat([[nextPosition[nextSquare].type,selection,nextSquare]]),
-                    constellation: nextConstellation,
-                    selected: null,
-                    whiteIsNext: !whiteIsNext,
-                }, resolve)
-                );
-            }
         }
     }
-    
-    
+        
     async handleClick(square) {
         const currentConstellation = JSON.parse(JSON.stringify(this.state.constellation));
         const currentPosition = currentConstellation.position;
@@ -188,14 +209,39 @@ export class Game extends React.Component {
                         await this.moveHandler(selected,promotionLocation,square.type);
                         const history = this.state.history; //history has been updated from moveHandler
                         if (this.state.gameType==="online") socket.emit('submit-move', history[history.length - 1]);
-                        if (checkmateDetector(this.state.constellation,this.state.whiteIsNext)) {alert("Mate!")}
-                    
+                        if (checkmateDetector(this.state.constellation,this.state.whiteIsNext)) {
+                            this.setState({
+                                postGame: true,
+                                gameResult: this.state.whiteIsNext ? "White Wins!" : "Black Wins!"
+                            })
+                            socket.emit('checkmate', this.state.whiteIsNext ? "white" : "black");
+                        }
+                        if (drawDetector(this.state.constellation,this.state.whiteIsNext)) {
+                            this.setState({
+                                postGame: true,
+                                gameResult: "Draw!"
+                            })
+                            socket.emit('draw', this.state.whiteIsNext ? "white" : "black");
+                        }
+
                     } else if (this.squareIsPossibleMove(square) && square !== promotionLocation) {//move will be executed
                         await this.moveHandler(selected,square);
                         const history = this.state.history; //history has been updated from moveHandler
                         if (this.state.gameType==="online" && !this.state.promotionStatus) socket.emit('submit-move', history[history.length - 1]);
                         if (checkmateDetector(this.state.constellation,this.state.whiteIsNext)) {
-                            alert("Mate!")}
+                            this.setState({
+                                postGame: true,
+                                gameResult: this.state.whiteIsNext ? "White Wins!" : "Black Wins!"
+                            })
+                            socket.emit('checkmate', this.state.whiteIsNext ? "white" : "black");
+                        }
+                        if (drawDetector(this.state.constellation,this.state.whiteIsNext)) {
+                            this.setState({
+                                postGame: true,
+                                gameResult: "Draw!"
+                            })
+                            socket.emit('draw', this.state.whiteIsNext ? "white" : "black");
+                        }
                     } else { //clicking on a not possible move square
                         if (this.state.promotionStatus) {
                             this.setState({
@@ -218,34 +264,94 @@ export class Game extends React.Component {
         }
     }
 
+    //post-game methods
+    handleEscape(){
+        if (!this.state.otherPlayerHasLeft) { socket.emit('close-room'); }
+        this.setState({
+            postGame: false
+        });
+        socket.close();
+    }
+
+    //navigation
+    handleUndo() {
+        const constellation = JSON.parse(JSON.stringify(this.state.constellation));
+        const history = JSON.parse(JSON.stringify(this.state.history));
+        const historySelector = this.state.historySelector;
+        const whiteIsNext = this.state.whiteIsNext;
+        if (historySelector){
+            this.setState({
+                constellation: undoLastMove(historySelector, history, constellation),
+                historySelector: historySelector-1,
+                whiteIsNext: !whiteIsNext,
+            });
+        }
+    }
+
+    handleRedo(){
+        const constellation = JSON.parse(JSON.stringify(this.state.constellation));
+        const history = JSON.parse(JSON.stringify(this.state.history));
+        const historySelector = this.state.historySelector;
+        const nextSelector = historySelector+1;
+        const whiteIsNext = this.state.whiteIsNext;
+        if (historySelector < history.length-1){
+            this.setState({
+                constellation: redoNextMove(history,history,constellation),
+                historySelector: historySelector+1,
+                whiteIsNext: !whiteIsNext
+            })
+        }
+    }
+
+
     render() {
         const history = this.state.history;
         const currentConstellation = this.state.constellation;
         const currentPosition = currentConstellation.position;
         const whiteIsNext = this.state.whiteIsNext;
         const promotionLocation = this.state.promotionLocation;
-        //const checkmate = checkmateDetector(current,whiteIsNext); //need to work this in somehow
-        //need to add draw
+        const gameResult = this.state.gameResult;
+        const historySelector =this.state.historySelector;
 
-        const modal = this.state.postGame 
+        const postGameModal = this.state.postGame 
         ? (
             <PostGame>
                 <div className="modal">
                     <PostGameMenu
-                        result ={"White Wins!"}
-
+                        result ={gameResult}
+                        escape ={() => this.handleEscape()}
                     />
                 </div>
             </PostGame>
         ) 
         : null ;
 
+        const takenWhitePieces = JSON.parse(JSON.stringify(
+            this.state.constellation.takenWhitePieces
+            .map(element => element[0])
+            .sort((first,second)=> piecesCompareFunction(first.type, second.type))
+            ));
+        const takenBlackPieces = JSON.parse(JSON.stringify(
+            this.state.constellation.takenBlackPieces
+            .map(element => element[0])
+            .sort((first,second)=> piecesCompareFunction(first.type, second.type))
+            ))
         return (
             <div className="game-container">
-                {modal}
-                <div className="board-container">
-                    <div className="player-info">
-                        <div className= "takenPieces"> takenWhitePieces </div>
+                {postGameModal}
+                <Undo 
+                    onClick = {() => this.handleUndo()}
+                />
+                <Redo
+                    onClick = {() => this.handleRedo()}
+                />
+                {JSON.stringify(historySelector)}
+                <div className="board-container"> 
+                    <div className="player-info">                        
+                        <TakenPieces
+                            color="black"
+                            takenPieces={takenBlackPieces}
+                        />
                         <TurnIndicator
                             turn = {!whiteIsNext ? "" : "yourTurn"}
                             value = "Black's Turn"
@@ -261,9 +367,13 @@ export class Game extends React.Component {
                         whiteIsNext = { whiteIsNext }
                         currentState={currentConstellation}
                         promotionLocation={ promotionLocation }
+                        playerColor= {this.state.playerColorIsWhite? "light-player": "dark-player"}
                     />
                     <div className="player-info">
-                        <div className= "takenPieces"> takenBlackPieces </div>
+                        <TakenPieces
+                            color="white"
+                            takenPieces={takenWhitePieces}
+                        /> 
                         <TurnIndicator
                             turn={!whiteIsNext ? "yourTurn" : ""}
                             value="White's Turn"

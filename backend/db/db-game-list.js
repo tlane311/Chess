@@ -33,18 +33,17 @@ export async function addGameToList(playerOne, playerTwo){
                     })
                     .then( (result) => {
                         if (result.result.n===1) {
-                            resolve("The game was added to the list");
+                            resolve(["Success: The game was added to the list",playerOne]);
                         } else {
-                            resolve("No game was created");
+                            reject(["Error: No game was created", null]);
                         }
                     });
                 } else {
-                    resolve('This game already exists.');
+                    reject(['Error: This game already exists.', null]);
                 }
             }
         })
-    }).then(result => `Success: ${result}`)
-    .catch( err => `Error: ${err}`);
+    })
 }
 
 export async function removeGameFromList(playerOne, playerTwo){   
@@ -180,7 +179,7 @@ export async function finalizeGame(player,result) {
                 .finally( () => client.close() );
             }
         });
-    });
+    })
 }
 
 
@@ -192,7 +191,6 @@ export async function searchListForGame(player){
                 client.close();
             }
             const db = client.db('chess');
-
             await db.collection('gameList') 
             .findOne({
                 $or:[
@@ -200,11 +198,11 @@ export async function searchListForGame(player){
                     {playerTwo: player}
                 ]                                           
             })
-            .then( doc => ["Success: Game found", doc.room, doc.playerOne, doc.playerTwo])
-            .catch( err => ["Error", err])
+            .then( doc => resolve(["Success: Game found", doc.room, doc.playerOne, doc.playerTwo]))
+            .catch( err => reject(["Error:", err]) )
             .finally( () => client.close() );
         });
-    });
+    })
 }
 
 
