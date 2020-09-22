@@ -108,7 +108,12 @@ export function undoLastMove(historySelector,history,constellation){
     const enPassantWasTaken = previousColor ==="white"
         ? pieceMoved==="whitePawn"  
             && (startingSquare - 9 ===  endingSquare || startingSquare - 7 === endingSquare)
-        : pieceMoved==="blackPawn"  && (startingSquare + 9 ===  endingSquare || startingSquare + 7 === endingSquare);
+            && endingSquare - 8 === priorStartingSquare
+            && endingSquare + 8 === priorEndingSquare
+        : pieceMoved==="blackPawn"  
+            && (startingSquare + 9 ===  endingSquare || startingSquare + 7 === endingSquare)
+            && endingSquare + 8 === priorStartingSquare
+            && endingSquare - 8 === priorEndingSquare;
 
     if (enPassantWasTaken){
         const shiftAmount = previousColor ==="white"

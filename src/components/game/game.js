@@ -362,7 +362,6 @@ export class Game extends React.Component {
                 <Redo
                     onClick = {() => this.handleRedo()}
                 />
-                {JSON.stringify(historySelector)}
                 <div className="board-container"> 
                     <div className="player-info">                        
                         <TakenPieces
