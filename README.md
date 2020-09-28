@@ -1,6 +1,6 @@
 
 ### Introduction
-This markdown was created to help myself whenever I want to alter the chess app or for anyone who is curious how it works.
+This project is still a work in progress. This markdown was created to help myself whenever I want to alter the chess app or for anyone who is curious how it works.
 
 ### Notes
 ES6 modules are used.
