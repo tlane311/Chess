@@ -79,13 +79,15 @@ export async function menuIsListening(){
         const playerIsLight = socket.id===playerOne;
         this.setState({
             inGame: true,
-            playerIsLight: playerIsLight
+            playerIsLight: playerIsLight,
+            online: true
         })
     });
     socket.on('finish-game', (gameResult) => {
         this.setState({
             inGame: false,
-            playerIsLight: null
+            playerIsLight: null,
+            online: false,
         })
     });
     

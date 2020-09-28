@@ -328,7 +328,6 @@ export class Game extends React.Component {
         const whiteIsNext = this.state.whiteIsNext;
         const promotionLocation = this.state.promotionLocation;
         const gameResult = this.state.gameResult;
-        const historySelector =this.state.historySelector;
 
         const postGameModal = this.state.postGame 
         ? (
