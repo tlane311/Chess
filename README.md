@@ -15,7 +15,7 @@ This is a full-stack application created using:
 
 When users play online, their live games are stored on a MongoDB database on the server locally. The project can be divided into the following substantial parts: the **chess engine**, the **React components**, the **sockets**, and the rest of the **backend**.
 
-    Below, we explore the structure of the app and some of the design decisions
+Below, we explore the structure of the app and some of the design decisions.
 
 ## 1. Chess Engine
 
@@ -68,7 +68,7 @@ const movesLogic = {
 }
 ```
 
-where each `[piece]Logic` is function with appropriate inputs/outputs. For example, `bishopLogic(selectedLocation, state)` is a function that takes in the `selected piece's location` and a `chess state` and returns an array listing all possible moves for the selected piece.
+where each `[piece]Logic` is function with appropriate inputs/outputs. For example, `bishopLogic(selectedLocation, state)` is a function that takes in the `selected piece's location` and a `chess state` and returns an array listing all possible moves for the selected piece. The functions are somewhat complicated, so if you are curious check them out in respective files in `app/src/components/pieces`.
 
 The other important pieces of the chess engine are dependents of `movesLogic`; they are the functions `checkDetector`, `checkmateDetector` and `drawDetector` located in `app/src/components/pieces/checklogic.js`. The functions take in a `chess state` and a `boolean` which decides if its white's turn or black's turn and return a boolean deciding if a player in check, checkmate, or draw.
 
@@ -161,9 +161,10 @@ The client uses an express server and stores data on a local mongodb database. W
 * controllers
 * services
 
-This structure is the standard architechture of a REST API. By dividing the backend up in this fashion: one can more easily add features in the future; the backend has a simple, straight-to-the-point structure, and one can identify bugs quickly. The services (and only the services) interact directly with database. The controllers receive protocol information and data from the socket server, and then use the services to complete their tasks. The routes handle calling the correct controllers to accomplish the desired effect. 
+This structure is based on an common(?) architechture pattern for REST APIs (see image below). By dividing the backend up in this fashion: one can more easily add features in the future; the backend has a simple, straight-to-the-point structure, and one can identify bugs quickly. The services (and only the services) interact directly with database. The controllers receive protocol information and data from the socket server, and then use the services to complete their tasks. The routes handle calling the correct controllers to accomplish the desired effect. 
 
-    INSERT IMAGE FROM THAT ONE WEBPAGE
+![REST API architecture](../Backend-Structure.png "REST API ARCHITECTURE")
+taken from [this page](https://www.coreycleary.me/project-structure-for-an-express-rest-api-when-there-is-no-standard-way/).
 
 ## Future Additions
 
@@ -177,3 +178,7 @@ In the *distant* future, I plan to add the following features:
 * Custom art for the chess pieces (in the very distant future) and more options for themes
 
 If the app grows considerably, I will likely need to use a state management tool like Redux.
+
+## Final Thoughts
+
+This app is by no means perfect and hardly cutting edge. However, it works and is something I put a lot of time into! If you made it this far, I hope you enjoyed this README.
