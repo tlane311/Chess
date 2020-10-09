@@ -201,8 +201,6 @@ export const firstPosition = {
     takenWhitePieces: [],
     takenBlackPieces: []
 }
-const test = "string"
-export { test }
 
 export function piecesCompareFunction(firstPieceType,secondPieceType){
     if (firstPieceType===secondPieceType) return 0;
