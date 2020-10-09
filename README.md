@@ -159,11 +159,11 @@ The client uses an express server and stores data on a local mongodb database. W
 
 * services
 * controllers
-* services
+* routes
 
-This structure is based on an common(?) architechture pattern for REST APIs (see image below). By dividing the backend up in this fashion: one can more easily add features in the future; the backend has a simple, straight-to-the-point structure, and one can identify bugs quickly. The services (and only the services) interact directly with database. The controllers receive protocol information and data from the socket server, and then use the services to complete their tasks. The routes handle calling the correct controllers to accomplish the desired effect. 
+This structure is based on an common(?) architechture pattern for REST APIs (see image below). By dividing the backend up in this fashion: one can more easily add features in the future; the backend has a simple, straight-to-the-point structure, and one can identify bugs quickly. The services (and only the services) interact directly with database. The controllers receive protocol information and data from the socket server, and then use the services to complete their tasks. The routes handle calling the correct controllers to accomplish the desired effect.
 
-![REST API architecture](../Backend-Structure.png "REST API ARCHITECTURE")
+![REST API architecture](./src/images/readme-images/Backend-Structure.png "REST API ARCHITECTURE")
 taken from [this page](https://www.coreycleary.me/project-structure-for-an-express-rest-api-when-there-is-no-standard-way/).
 
 ## Future Additions
