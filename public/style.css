@@ -116,7 +116,7 @@ body {
 
 
 /* Tablet */
-@media ( 960px <= width < 1270px){
+@media ( max-width: 1270px){
     
 }
 
