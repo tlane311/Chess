@@ -1,11 +1,8 @@
-
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 
 import { Game } from './components/game/game.js';
 import { Menu } from './components/menu/menu.js';
-import { Login } from './components/login/login.js'
 
 ReactDOM.render(
     <Game />,
@@ -16,8 +13,8 @@ ReactDOM.render(
     <Menu />,
     document.getElementById('menu')
 );
-
+/*
 ReactDOM.render(
     <Login />,
     document.getElementById('login')
-);
+);*/

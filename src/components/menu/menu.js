@@ -12,14 +12,15 @@ export class Menu extends React.Component {
         this.state = {
             inQueue: false,
             localGame: false,
-            inGame: false, //decides when menu switches to in-game menu
-            inGameShown: false,
+            localMenuShown: false, //decides when menu expands
+            onlineGame: false, 
+            onlineMenuShown: false, //decides when menu expands
             playerIsLight: null, 
             //player color is stored in state since we might need to pass it to server if the player surrenders or asks for draws
             //note, the menu does not talk directly to game
-            drawRequested: false,
-            drawRequestSent: false,
-            drawDeclined: false,
+            drawRequested: false,   // affects onlineGameMenu
+            drawRequestSent: false, // affects onlineGameMenu
+            drawDeclined: false,    // affects onlineGameMenu
         }
         menuIsListening.bind(this)();
     }
@@ -31,7 +32,8 @@ export class Menu extends React.Component {
         } else {
             socket.open().emit('queue');
             this.setState({
-                inQueue: true
+                inQueue: true,
+                localGame: false
             });
         }
     }
@@ -41,16 +43,26 @@ export class Menu extends React.Component {
             socket.emit('abandon-queue').close();
             }
         this.setState({
-            localGame: true,
+            localGame: !this.state.localGame,
+            localMenuShown: false,
             inQueue: false
         });
     }
 
     expandClick(){
-        const inGameShown = this.state.inGameShown;
-        this.setState({
-            inGameShown: !inGameShown
-        })
+        if (this.state.localGame) {
+            const localMenuShown = this.state.localMenuShown;
+            this.setState({
+                localMenuShown: !localMenuShown
+            })
+        }
+        if (this.state.onlineGame) {
+            const onlineMenuShown = this.state.onlineMenuShown;
+            this.setState({
+                onlineMenuShown: !onlineMenuShown
+            })
+        }
+
     }
 
     surrenderClick(){
@@ -83,83 +95,99 @@ export class Menu extends React.Component {
     }
 
     render(){
-        const inGame = this.state.inGame;
-        const inGameShown = this.state.inGameShown;
-        const showGameButtons = inGameShown ? " " : " hide-display";
-        const displayPlus = !inGameShown ? " " : " hide-display";
-        const drawRequested = this.state.drawRequested;
-        const sentDrawRequest = this.state.drawRequestSent ? "Requested": "Draw?"
-        const drawDeclined = this.state.drawDeclined ? "Declined" : sentDrawRequest;
-        //need some logic to shape menu when draw requested
+        const invertedOnlineButton = this.state.inQueue ? " inverted-button" : "";
+        const playOnlineText = this.state.inQueue ? "finding game" : "play online";
+
+
+        const onlineGame = this.state.onlineGame;
         
-        if (!inGame) {
-            return(
-                <nav className="menu-buttons">
-                    <button className="dark-button" onClick = { () => this.localClick() }>
-                        local play
-                    </button>
-                    <button className="background-button" onClick = { () => this.queueClick() }>
-                        play online
-                    </button>
-                    <button className="settings-button" onClick = {() => {}}>
-                        settings
-                    </button>
-                </nav>
-            )
-        } else if (!drawRequested) {
-            return(
-                <nav className="in-game-buttons">
-                    <div className="game-buttons-container">
-                        <h2>Playing With:</h2>
-                        <h2> Guest </h2>
-                        
-                        <div className={"game-buttons" + showGameButtons}>
-                            <button className="dark-button" onClick = {() => this.surrenderClick()}>
-                                surrender
-                            </button>
-                            <button className="background-button" onClick = {() => this.handleDrawRequest()}>
-                                {drawDeclined}
-                            </button>
-                        </div>
+        
+        const onlineMenuShown = this.state.onlineMenuShown;
+        const showGameButtons = onlineMenuShown ? " " : " hide-display";    //using css, controls what buttons are displayed 
+        const displayPlus = !onlineMenuShown ? " " : " hide-display";       //using css, controls if the + or - is displayed 
+        
+        const drawRequested = this.state.drawRequested;
+        const sentDrawRequest = this.state.drawRequestSent ? "Requested": "draw?"
+        const drawDeclined = this.state.drawDeclined ? "Declined" : sentDrawRequest;
+        
+        
+        const localGame = this.state.localGame;
+        const invertedLocalButton = localGame ? " inverted-button" : "";
 
-                        <div className="expand-collapse-button" onClick={ () => this.expandClick() }>
-                            <div id="vertical-div" className={displayPlus}></div>
-                            <div id="horizontal-div"></div>
-                        </div>
-                    </div>
-                    
-                    <button className="settings-button" onClick = {() => {}}>
-                        settings
-                    </button>
-                </nav>
-            )
-        } else {
-            return(
-                <nav className="in-game-buttons">
-                    <div className="game-buttons-container">
-                        <h2>Draw Request From:</h2>
-                        <h2> Guest </h2>
-                        
-                        <div className={"game-buttons" + showGameButtons}>
-                            <button className="dark-button" onClick = {this.handleDrawReply(true)}>
-                                accept
-                            </button>
-                            <button className="background-button" onClick = {this.handleDrawReply(false)}>
-                                decline
-                            </button>
-                        </div>
+        if (onlineGame) { 
+            if (!drawRequested){    
+                return(
+                    <>
+                    <nav className="in-game-buttons">
+                        <div className="game-buttons-container">
+                            <h2>Playing With:</h2>
+                            <h2> Guest </h2>
+                            
+                            <div className={"game-buttons" + showGameButtons}>
+                                <button className="dark-button" onClick = {() => this.surrenderClick()}>
+                                    surrender
+                                </button>
+                                <button className="background-button" onClick = {() => this.handleDrawRequest()}>
+                                    {drawDeclined}
+                                </button>
+                            </div>
 
-                        <div className="expand-collapse-button" onClick={ () => this.expandClick() }>
-                            <div id="vertical-div" className={displayPlus}></div>
-                            <div id="horizontal-div"></div>
+                            <div className="expand-collapse-button" onClick={ () => this.expandClick() }>
+                                <div id="vertical-div" className={displayPlus}></div>
+                                <div id="horizontal-div"></div>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <button className="settings-button" onClick = {() => {}}>
-                        settings
-                    </button>
-                </nav>
-            )
-        }
+                    </nav>
+
+                    <nav>
+                        <button className="settings-button" onClick = {() => {}}>
+                            settings
+                        </button>
+                    </nav>
+                    </>
+                )
+            } else {
+                return(
+                    <nav className="in-game-buttons">
+                        <div className="game-buttons-container">
+                            <h2>Draw Request From:</h2>
+                            <h2> Guest </h2>
+                            
+                            <div className={"game-buttons" + showGameButtons}>
+                                <button className="dark-button" onClick = {this.handleDrawReply(true)}>
+                                    accept
+                                </button>
+                                <button className="background-button" onClick = {this.handleDrawReply(false)}>
+                                    decline
+                                </button>
+                            </div>
+    
+                            <div className="expand-collapse-button" onClick={ () => this.expandClick() }>
+                                <div id="vertical-div" className={displayPlus}></div>
+                                <div id="horizontal-div"></div>
+                            </div>
+                        </div>
+                        
+                        <button className="settings-button" onClick = {() => {}}>
+                            settings
+                        </button>
+                    </nav>
+                )
+            }
+        } 
+        
+        return( //this is what is returned when not in localGame or onlineGame
+            <nav className="menu-buttons">
+                <button className={"dark-button"+invertedLocalButton} onClick = { () => this.localClick() }>
+                    local play
+                </button>
+                <button className={"background-button"+invertedOnlineButton} onClick = { () => this.queueClick() }>
+                    {playOnlineText}
+                </button>
+                <button className="settings-button" onClick = {() => {}}>
+                    settings
+                </button>
+            </nav>
+        )
     }
 }

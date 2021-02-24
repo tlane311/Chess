@@ -59,13 +59,21 @@ export class Promoter extends React.Component {
     }
 
     render() {
-        const flexDirection ={
-            "flex-direction": 'column-reverse',
-            top: "-12vh",
-        };
+        const playerColor = this.props.playerColor;
+        const promotionColor = this.props.promotionColor;
+
+        const flexDirection = playerColor==="white"
+            ? promotionColor === "white"
+                ? "top-bottom"
+                : "bottom-top"
+            : promotionColor === "white"
+                ? "bottom-top"
+                : "top-bottom"
+
+
+
         return (
-            <div className="promoter" id={this.props.promotionDisplayed} 
-                style={this.props.promotionColor ==="black" ? flexDirection: null}>
+            <div className={"promoter " + flexDirection + " " + playerColor} id={this.props.promotionDisplayed}> 
                 {
                 this.promotionList(this.props.promotionColor)
                 .map((piece,index) => this.renderPromotionSquare(piece))

@@ -12,7 +12,7 @@
     border: 3;
     border-radius: 0.25rem;
     border-color: var(--highlight-color);
-    font-size: 1.5rem;
+    font-size: min(2rem, 24px);
     line-height: 1.2;
     white-space: nowrap;
     padding: 0.25rem 0.5rem;
@@ -33,11 +33,22 @@
     color: var(--dark-color);
 }
 
+.dark-button.inverted-button{
+    background-color:var(--light-color);
+    border-color: var(--dark-color);
+    color: var(--dark-color);
+}
+
 .background-button{
     background-color: var(--background-color);
     color: var(--light-color); 
 }
 .background-button:hover{
+    background-color:var(--light-color);
+    border-color: var(--background-color);
+    color: var(--background-color);
+}
+.background-button.inverted-button{
     background-color:var(--light-color);
     border-color: var(--background-color);
     color: var(--background-color);
@@ -52,15 +63,37 @@
     border-color: var(--light-color); 
     color: var(--light-color); 
 }
+
 .settings-button{
+    height: 60px;
+    width: 160px;
+    border: 3;
+    border-radius: 0.25rem;
+
     background-color: var(--bright-accent-color);
     color: var(--dark-color);
+    font-size: 1.5rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    padding: 0.25rem 0.5rem;
+    margin: 0.25rem;
+    cursor: pointer;
+    border-radius:50px;
+    box-shadow: 1px 3px 3px 3px rgba(0,0,0,0.3);
 }
 .settings-button:hover{
     background-color:var(--dark-color);
     border-color:var(--bright-accent-color); 
     color: var(--bright-accent-color);
 }
+.settings-button.inverted-button{
+    background-color:var(--dark-color);
+    border-color:var(--bright-accent-color); 
+    color: var(--bright-accent-color);
+}
+
+
+
 .bright-accent-button{
     background-color: var(--bright-accent-color);
     color: var(--dark-color);
@@ -88,17 +121,16 @@
     .in-game-buttons button {
         height: 60px;
         width: 160px;
-        border-radius: 0.25rem;
-        font-size: 1.5rem;
+        font-size: min(1rem,24px);
         line-height: 1.2;
         white-space: nowrap;
         padding: 0.25rem 0.5rem;
         margin: 0.25rem;
         cursor: pointer;
-        border-radius: 5%;
+        border-radius: 50px;
     }
     .game-buttons-container{
-        background-color: var(--dark-color-with-opacity);
+        background-color: var(--darkened-background-color);
         width: 180px;
         max-height: 475px;
         display:flex;
@@ -109,6 +141,7 @@
         border-radius: 15px;
     }
         .game-buttons-container h2 {
+            font-size:1rem;
             color: var(--light-color);
             order: 1;
         }

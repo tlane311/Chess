@@ -1,5 +1,5 @@
 :root{
-    --square-size: 11vh;/*min(9vh,9vw);*/
+    --square-size: 10vh;/*min(9vh,9vw);*/
     --margin-size: 4vw;/*min(10vh,10vw);*/
     --font-opacity: 1;
     --board-opacity: 1;
@@ -20,15 +20,23 @@
     --bright-accent-color: #02c39a;
     --highlight-color: #00A896;
 */
+
+/* 15 15 7 */
 }
 *{
     margin: 0px;
     padding: 0px;
     box-sizing: border-box;
 }
+html{
+    font-size: 1vw;
+    
+}
 button{
     outline:none;
     border:none;
+    font-family: 'Lato', sans-serif;
+    font-size:1rem;
 }
 button:hover{
     border: solid 2px;
@@ -40,7 +48,6 @@ body {
     background-color: var(--background-color);
     }
     .menu-bar{
-        position:absolute;
         display:flex;
         flex-direction: column;
         background-color: var(--background-color);
@@ -48,7 +55,6 @@ body {
         height: 100vh;
         justify-content: flex-start;
         align-items: center;
-        margin-right: auto;
         left:0px;
     }
 
@@ -95,6 +101,29 @@ body {
 @media (min-width: 1270px){
     body{
         display:flex;
+        justify-content: flex-start;
+        align-items: flex-start;
+        height:100vh;
+        width:100vw;
+    }
+    
+            .board-container{
+                padding: 2vw;
+            }
+        
+            .history-container{
+                height: calc(8*var(--square-size));
+                width: 200px;
+            }
+
+
+}
+
+
+/* Tablet */
+@media ( max-width: 1270px){
+    body{
+        display:flex;
         justify-content: center;
         align-items: flex-start;
         height:100vh;
@@ -108,21 +137,28 @@ body {
             .history-container{
                 height: calc(8*var(--square-size));
                 width: 200px;
-                margin-right:4vw;
             }
-
-
-}
-
-
-/* Tablet */
-@media ( max-width: 1270px){
-    
 }
 
 
 /* Mobile */
 @media (max-width:959px){
+    body{
+        display:flex;
+        justify-content: center;
+        align-items: flex-start;
+        height:100vh;
+        width:100vw;
+    }
+    
+            .board-container{
+                padding: 2vw;
+            }
+        
+            .history-container{
+                height: calc(8*var(--square-size));
+                width: 200px;
+            }
 }
 
 /*                                                   */

@@ -15,6 +15,7 @@ export function socketIsListening() {
                 playerColorIsWhite: true,
                 constellation: firstPosition,
                 history: [],
+                historySelector: 0,
                 selected: null,
                 whiteIsNext: true,
                 promotionStatus: false,
@@ -78,16 +79,16 @@ export async function menuIsListening(){
     socket.on('game-created', (playerOne) => {
         const playerIsLight = socket.id===playerOne;
         this.setState({
-            inGame: true,
+            inQueue: false,
+            onlineGame: true,
+            onlineMenuShown: false,
             playerIsLight: playerIsLight,
-            online: true
         })
     });
     socket.on('finish-game', (gameResult) => {
         this.setState({
-            inGame: false,
+            onlineGame: false,
             playerIsLight: null,
-            online: false,
         })
     });
     
@@ -95,7 +96,7 @@ export async function menuIsListening(){
         if (requesterID !==socket.id){
             this.setState({
                 drawRequested: true,
-                inGameShown: true
+                onlineMenuShown: true
             })
         }
     } )

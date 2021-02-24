@@ -22,6 +22,7 @@ export class Board extends React.Component {
                     promotionDisplayed = "show-promoter"
                     promotionColor = {number > 55 ? "black" : "white"}
                     onClick ={ (obj) => {this.props.onClick(obj)} }
+                    playerColor = {this.props.playerColor}
                 />
         )} else {
             return null;
@@ -45,7 +46,7 @@ export class Board extends React.Component {
 
     renderRow(number){
         return (
-            <div className={"board-row "+this.props.playerColor} key={`row-${number}`}>
+            <div className={"board-row "} key={`row-${number}`}>
                 {[0,1,2,3,4,5,6,7]
                 .map( item => (
                     this.renderSquare(item+number)
@@ -56,7 +57,7 @@ export class Board extends React.Component {
     
     render() {
         return (
-            <div className={"board "+this.props.playerColor} key={'board'}>
+            <div className={"board "+this.props.boardOrientation} key={'board'}>
                 {[0,8,16,24,32,40,48,56]
                 .map( item => (
                     this.renderRow(item)

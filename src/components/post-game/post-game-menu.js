@@ -41,17 +41,44 @@ export default class PostGameMenu extends React.Component{
             ));
 
     }
-    handleGG(){
-        //socket stuff
-    }
-    handleAnalyze(){
-        //socket stuff
-    }
-    handleEscape(){
-        
+
+    handleNewGame = () => {
+        this.props.newGame(true);
     }
 
     render(){
+        //local game post-game-menu
+        const localGame = this.props.localGame;
+        
+        if (localGame) {
+            return(
+                <div className = "post-game-container">
+                    <h1 className = "result">
+                        {this.props.result}
+                    </h1>
+
+                    <nav className = "post-game-options">
+                        <button className="background-button" onClick = {this.handleNewGame}> New Game </button>
+                        
+                        <button className="dark-button" onClick = {this.props.escape}> Analyze </button>
+                        <button className="escape-button" onClick ={this.props.escape}> 
+                            <div id="negative-slope"></div>
+                            <div id="positive-slope"></div>
+                        </button>
+                    </nav>
+            
+                </div>
+            )
+
+        }
+        
+        
+        
+        
+        
+        
+        
+        //online game post-game-menu
         const sentRequest = this.state.rematchRequestSent ? "Request Sent" : "Rematch?"
         const rematchDeclined = this.state.rematchDeclined || this.state.otherPlayerHasLeft ? "Request Declined" : sentRequest;
         const rematchButton = this.state.rematchRequested
@@ -66,6 +93,12 @@ export default class PostGameMenu extends React.Component{
             </div>
         )
         : <><button className="background-button" onClick = {() => this.handleRematch()}> {rematchDeclined} </button></>
+        
+
+
+
+
+
 
         return(
             <div className = "post-game-container">
@@ -75,8 +108,8 @@ export default class PostGameMenu extends React.Component{
 
                 <nav className = "post-game-options">
                     {rematchButton}
-                    <button className="bright-accent-button" onClick = {this.handleGG}> "Good Game" </button>
-                    <button className="dark-button" onClick = {this.handleAnalyze}> Analyze </button>
+                    
+                    <button className="dark-button" onClick = {this.props.escape}> Analyze </button>
                     <button className="escape-button" onClick ={this.props.escape}> 
                         <div id="negative-slope"></div>
                         <div id="positive-slope"></div>
@@ -88,3 +121,5 @@ export default class PostGameMenu extends React.Component{
     }
 
 }
+
+//<button className="bright-accent-button" onClick = {this.handleGG}> "Good Game" </button>

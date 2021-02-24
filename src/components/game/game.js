@@ -13,6 +13,7 @@ import { imgHandler } from './pieces/imgHandler.js';
 import PostGame from '../post-game/post-game.js'
 import PostGameMenu from '../post-game/post-game-menu.js'
 import TakenPieces from './taken-pieces/taken-pieces.js'
+
 export class Game extends React.Component {
 
     constructor(props) {
@@ -34,7 +35,7 @@ export class Game extends React.Component {
         socketIsListening.bind(this)();
     }
 
-    possibleMoves(selected){ //returns array of moves
+    possibleMoves= (selected) => { //returns array of moves
         const constellation = this.state.constellation;
         const whiteIsNext = this.state.whiteIsNext;
 
@@ -52,7 +53,7 @@ export class Game extends React.Component {
         }
     }
 
-    squareIsPossibleMove(square) {  //returns boolean describing if a given square is a possible move from selected
+    squareIsPossibleMove= (square) => {  //returns boolean describing if a given square is a possible move from selected
         const selected = this.state.selected;
         return Boolean(
             this.possibleMoves(selected)
@@ -60,7 +61,7 @@ export class Game extends React.Component {
             .length);
     }
 
-    shade(square){//adds a css id to each square that decides shade
+    shade= (square) => {//adds a css id to each square that decides shade
         const constellation = this.state.constellation;
         let squareIsPossibleMove = this.squareIsPossibleMove(square)
 
@@ -76,7 +77,7 @@ export class Game extends React.Component {
     }
     squareIsPromotion = (square) => square.id==="promoted";
 
-    moveHandler(selection, nextSquare, promotionType=null){
+    moveHandler = (selection, nextSquare, promotionType=null)=>{
         const oldHistory = JSON.parse(JSON.stringify(this.state.history));
         const historySelector = this.state.historySelector;
         const whiteIsNext = this.state.whiteIsNext;
@@ -207,7 +208,7 @@ export class Game extends React.Component {
         }
     }
         
-    async handleClick(square) {
+    handleClick = async (square) => {
         const currentConstellation = JSON.parse(JSON.stringify(this.state.constellation));
         const currentPosition = currentConstellation.position;
         const selected = this.state.selected;
@@ -230,16 +231,16 @@ export class Game extends React.Component {
                         if (checkmateDetector(this.state.constellation,this.state.whiteIsNext)) {
                             this.setState({
                                 postGame: true,
-                                gameResult: this.state.whiteIsNext ? "White Wins!" : "Black Wins!"
+                                gameResult: !this.state.whiteIsNext ? "White Wins!" : "Black Wins!"
                             })
-                            socket.emit('checkmate', this.state.whiteIsNext ? "white" : "black");
+                            if (this.state.gameType==="online") socket.emit('checkmate', this.state.whiteIsNext ? "white" : "black");
                         }
                         if (drawDetector(this.state.constellation,this.state.whiteIsNext)) {
                             this.setState({
                                 postGame: true,
                                 gameResult: "Draw!"
                             })
-                            socket.emit('draw', this.state.whiteIsNext ? "white" : "black");
+                            if (this.state.gameType==="online") socket.emit('draw', this.state.whiteIsNext ? "white" : "black");
                         }
 
                     } else if (this.squareIsPossibleMove(square) && square !== promotionLocation) {//move will be executed
@@ -249,16 +250,16 @@ export class Game extends React.Component {
                         if (checkmateDetector(this.state.constellation,this.state.whiteIsNext)) {
                             this.setState({
                                 postGame: true,
-                                gameResult: this.state.whiteIsNext ? "White Wins!" : "Black Wins!"
+                                gameResult: !this.state.whiteIsNext ? "White Wins!" : "Black Wins!"
                             })
-                            socket.emit('checkmate', this.state.whiteIsNext ? "white" : "black");
+                            if (this.state.gameType==="online") socket.emit('checkmate', this.state.whiteIsNext ? "white" : "black");
                         }
                         if (drawDetector(this.state.constellation,this.state.whiteIsNext)) {
                             this.setState({
                                 postGame: true,
                                 gameResult: "Draw!"
                             })
-                            socket.emit('draw', this.state.whiteIsNext ? "white" : "black");
+                            if (this.state.gameType==="online") socket.emit('draw', this.state.whiteIsNext ? "white" : "black");
                         }
                     } else { //clicking on a not possible move square
                         if (this.state.promotionStatus) {
@@ -283,16 +284,19 @@ export class Game extends React.Component {
     }
 
     //post-game methods
-    handleEscape(){
+    handleEscape=()=>{
         if (!this.state.otherPlayerHasLeft) { socket.emit('close-room'); }
+        
         this.setState({
-            postGame: false
+            postGame: false,
+            gameType: "local"
         });
+        
         socket.close();
     }
 
     //navigation
-    handleUndo() {
+    handleUndo=()=> {
         const constellation = JSON.parse(JSON.stringify(this.state.constellation));
         const history = JSON.parse(JSON.stringify(this.state.history));
         const historySelector = this.state.historySelector;
@@ -309,7 +313,7 @@ export class Game extends React.Component {
         }
     }
 
-    handleRedo(){
+    handleRedo=()=>{
         const history = JSON.parse(JSON.stringify(this.state.history));
         const historySelector = this.state.historySelector;
         const nextMove = historySelector < history.length
@@ -320,6 +324,24 @@ export class Game extends React.Component {
         }
     }
 
+    handleNewGame = (bool) => {
+        if (bool){
+            this.setState({
+                gameType: "local",
+                playerColorIsWhite: true,
+                constellation: firstPosition,
+                history: [],
+                historySelector: 0,
+                selected: null,
+                whiteIsNext: true,
+                promotionStatus: false,
+                promotionLocation: null,
+                postGame: false,
+                otherPlayerHasLeft: false,
+                gameResult: null,
+            })
+        }
+    }
 
     render() {
         const history = this.state.history;
@@ -328,6 +350,7 @@ export class Game extends React.Component {
         const whiteIsNext = this.state.whiteIsNext;
         const promotionLocation = this.state.promotionLocation;
         const gameResult = this.state.gameResult;
+        const playerColorIsWhite = this.state.playerColorIsWhite;
 
         const postGameModal = this.state.postGame 
         ? (
@@ -335,7 +358,9 @@ export class Game extends React.Component {
                 <div className="modal">
                     <PostGameMenu
                         result ={gameResult}
-                        escape ={() => this.handleEscape()}
+                        escape ={this.handleEscape}
+                        localGame = {this.state.gameType==="local"}
+                        newGame = {this.handleNewGame} 
                     />
                 </div>
             </PostGame>
@@ -355,12 +380,7 @@ export class Game extends React.Component {
         return (
             <div className="game-container">
                 {postGameModal}
-                <Undo 
-                    onClick = {() => this.handleUndo()}
-                />
-                <Redo
-                    onClick = {() => this.handleRedo()}
-                />
+
                 <div className="board-container"> 
                     <div className="player-info">                        
                         <TakenPieces
@@ -368,21 +388,25 @@ export class Game extends React.Component {
                             takenPieces={takenBlackPieces}
                         />
                         <TurnIndicator
-                            turn = {!whiteIsNext ? "" : "yourTurn"}
-                            value = "Black's Turn"
-                            colorOfIndicator = "black-turn-indicator"
+                            turn = {
+                                !playerColorIsWhite
+                                    ? whiteIsNext ? "": "not-your-turn"
+                                    : !whiteIsNext ? "": "not-your-turn"
+                                }
+                            value = {!playerColorIsWhite? "White's Turn": "Black's Turn"}
+                            colorOfIndicator = {!playerColorIsWhite? "white-turn-indicator": "black-turn-indicator"}
                         /> 
                     </div>
                     <Board 
                         position= { currentPosition }
-                        onClick = {square => {
-                            this.handleClick(square);
-                            }}
-                        shade = { square => this.shade(square) }
+                        onClick = {this.handleClick}
+                        shade = { this.shade }
                         whiteIsNext = { whiteIsNext }
                         currentState={currentConstellation}
                         promotionLocation={ promotionLocation }
-                        playerColor= {this.state.playerColorIsWhite? "light-player": "dark-player"}
+                        boardOrientation= {this.state.playerColorIsWhite? "": "dark-player"}
+                        playerColor = {this.state.playerColorIsWhite ? "white" : "black"}
+
                     />
                     <div className="player-info">
                         <TakenPieces
@@ -390,15 +414,44 @@ export class Game extends React.Component {
                             takenPieces={takenWhitePieces}
                         /> 
                         <TurnIndicator
-                            turn={!whiteIsNext ? "yourTurn" : ""}
-                            value="White's Turn"
-                            colorOfIndicator="white-turn-indicator"
+                            turn={
+                                playerColorIsWhite
+                                    ? whiteIsNext ? "": "not-your-turn"
+                                    : !whiteIsNext ? "": "not-your-turn"
+                                }
+                            value={playerColorIsWhite? "White's Turn": "Black's Turn"}
+                            colorOfIndicator={playerColorIsWhite? "white-turn-indicator": "black-turn-indicator"}
                         />
                     </div>
                 </div>
+
                 <History
                     completeHistory = { history }
+                    historySelector = { this.state.historySelector}
                 />
+
+                <div className="undo-redo">
+                    <Undo 
+                        onClick = {() => {
+                            if (this.state.gameType==="local") this.handleUndo();
+                        }}
+                    />
+                    <Redo
+                        onClick = {() => {
+                            if (this.state.gameType==="local") this.handleRedo();
+                        }}
+                    />
+                    <button onClick={() => {
+                        this.handleNewGame(true)
+                    }}> New Game </button>
+
+                    <button onClick={() => {
+                        this.setState({
+                            playerColorIsWhite: !this.state.playerColorIsWhite,
+                        })
+                    }}> Flip Board </button>
+                </div>
+
             </div>
         )
     }
